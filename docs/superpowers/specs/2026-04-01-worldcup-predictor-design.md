@@ -218,7 +218,7 @@ Task: Write 3 sentences of match analysis explaining this prediction.
 Tone: analytical, confident. Language: [EN/ES]
 ```
 
-**Cost:** ~$0.002 per prediction. 100 group + knockout matches = ~$0.20 total for the entire tournament.
+**Cost:** ~$0.002 per prediction. 104 matches total (72 group + 32 knockout) = ~$0.21 total for the entire tournament.
 
 ---
 
