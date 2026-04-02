@@ -1,5 +1,5 @@
 // src/types/__tests__/database.test.ts
-import type { Team, Match, Prediction, TeamStats, NewsItem, Subscription, UserPick } from '../database'
+import type { Team, Match } from '../database'
 
 describe('Database types', () => {
   it('Team has required fields', () => {

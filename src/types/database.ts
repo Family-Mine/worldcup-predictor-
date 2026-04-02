@@ -1,7 +1,5 @@
 // src/types/database.ts
 
-export type TeamForm = 'W' | 'D' | 'L'
-
 export interface Team {
   id: string
   name: string
@@ -33,8 +31,8 @@ export interface Prediction {
   home_win_prob: number
   draw_prob: number
   away_win_prob: number
-  predicted_home_score: number
-  predicted_away_score: number
+  predicted_home_score: number | null
+  predicted_away_score: number | null
   predicted_winner: 'home' | 'draw' | 'away'
   confidence_level: 'high' | 'medium' | 'low'
   ai_narrative_en: string
@@ -64,7 +62,7 @@ export interface NewsItem {
   content_en: string
   content_es: string
   impact_weight: number
-  source_url: string
+  source_url: string | null
   source_name: string
   fetched_at: string
   active: boolean
@@ -76,7 +74,7 @@ export interface Subscription {
   stripe_customer_id: string
   stripe_payment_intent_id: string
   status: 'active' | 'cancelled' | 'expired'
-  expires_at: string
+  expires_at: string | null
 }
 
 export interface UserPick {
@@ -96,6 +94,7 @@ export interface MatchWithTeams extends Match {
 }
 
 export interface GroupStanding {
+  group_letter: string
   team: Team
   played: number
   won: number
