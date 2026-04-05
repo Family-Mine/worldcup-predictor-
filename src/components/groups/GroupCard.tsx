@@ -1,3 +1,4 @@
+'use client'
 // src/components/groups/GroupCard.tsx
 import Link from 'next/link'
 import { useLocale } from 'next-intl'

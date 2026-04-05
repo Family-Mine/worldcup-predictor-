@@ -13,6 +13,7 @@ export function MatchCard({ match }: MatchCardProps) {
   const locale = useLocale()
   const prefix = locale === 'es' ? '/es' : ''
   const isFinished = match.status === 'finished'
+  const isLive = match.status === 'live'
 
   return (
     <Link href={`${prefix}/matches/${match.id}`}>
@@ -27,9 +28,9 @@ export function MatchCard({ match }: MatchCardProps) {
         </div>
 
         <div className="flex items-center gap-1 mx-2 min-w-[60px] justify-center">
-          {isFinished ? (
-            <span className="text-lg font-black text-white tabular-nums">
-              {match.home_score} – {match.away_score}
+          {isFinished || isLive ? (
+            <span className={`text-lg font-black tabular-nums ${isLive ? 'text-green-400' : 'text-white'}`}>
+              {match.home_score ?? 0} – {match.away_score ?? 0}
             </span>
           ) : (
             <span className="text-xs text-slate-500 font-medium">vs</span>

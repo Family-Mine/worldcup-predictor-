@@ -8,7 +8,9 @@ import Link from 'next/link'
 
 export const revalidate = 3600
 
-export default async function TeamPage({ params }: { params: { id: string } }) {
+export default async function TeamPage({ params }: { params: { id: string; locale: string } }) {
+  const locale = params.locale
+  const prefix = locale === 'es' ? '/es' : ''
   const supabase = getSupabaseServerClient()
 
   const [{ data: team, error }, { data: stats }, { data: news }] = await Promise.all([
@@ -37,7 +39,7 @@ export default async function TeamPage({ params }: { params: { id: string } }) {
     <div className="max-w-4xl mx-auto px-4 py-12">
       {/* Back link */}
       <div className="mb-6">
-        <Link href={`/groups/${t.group_letter}`} className="text-slate-500 text-sm hover:text-slate-300">
+        <Link href={`${prefix}/groups/${t.group_letter}`} className="text-slate-500 text-sm hover:text-slate-300">
           ← Group {t.group_letter}
         </Link>
       </div>

@@ -10,8 +10,10 @@ import Link from 'next/link'
 
 export const revalidate = 3600
 
-export default async function GroupPage({ params }: { params: { letter: string } }) {
+export default async function GroupPage({ params }: { params: { letter: string; locale: string } }) {
   const letter = params.letter.toUpperCase()
+  const locale = params.locale
+  const prefix = locale === 'es' ? '/es' : ''
   const supabase = getSupabaseServerClient()
 
   const [{ data: teams, error: teamsError }, { data: matches }] = await Promise.all([
@@ -60,7 +62,7 @@ export default async function GroupPage({ params }: { params: { letter: string }
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="mb-2">
-        <Link href="/groups" className="text-slate-500 text-sm hover:text-slate-300">← Groups</Link>
+        <Link href={`${prefix}/groups`} className="text-slate-500 text-sm hover:text-slate-300">← Groups</Link>
       </div>
       <div className="mb-8">
         <span className="text-slate-400 text-sm uppercase tracking-widest">Group</span>
@@ -79,7 +81,7 @@ export default async function GroupPage({ params }: { params: { letter: string }
           <span className="text-center w-8 font-bold text-white">Pts</span>
         </div>
         {standings.map((s, i) => (
-          <Link href={`/teams/${s.team.id}`} key={s.team.id}>
+          <Link href={`${prefix}/teams/${s.team.id}`} key={s.team.id}>
             <div className="grid grid-cols-[1fr,auto,auto,auto,auto,auto,auto] gap-x-3 px-4 py-3 items-center border-b border-surface-border last:border-0 hover:bg-surface-border/30 transition-colors">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-slate-500 text-sm w-4 flex-shrink-0">{i + 1}</span>
