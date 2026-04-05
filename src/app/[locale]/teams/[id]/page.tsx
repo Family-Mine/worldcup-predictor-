@@ -10,7 +10,7 @@ export const revalidate = 3600
 
 export default async function TeamPage({ params }: { params: { id: string; locale: string } }) {
   const locale = params.locale
-  const prefix = locale === 'es' ? '/es' : ''
+  const prefix = `/${locale}`
   const supabase = getSupabaseServerClient()
 
   const [{ data: team, error }, { data: stats }, { data: news }] = await Promise.all([

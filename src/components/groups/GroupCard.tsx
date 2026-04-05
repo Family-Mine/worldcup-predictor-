@@ -12,7 +12,7 @@ interface GroupCardProps {
 
 export function GroupCard({ letter, teams }: GroupCardProps) {
   const locale = useLocale()
-  const prefix = locale === 'es' ? '/es' : ''
+  const prefix = `/${locale}`
 
   return (
     <Link href={`${prefix}/groups/${letter}`}>

@@ -13,7 +13,7 @@ export const revalidate = 3600
 export default async function GroupPage({ params }: { params: { letter: string; locale: string } }) {
   const letter = params.letter.toUpperCase()
   const locale = params.locale
-  const prefix = locale === 'es' ? '/es' : ''
+  const prefix = `/${locale}`
   const supabase = getSupabaseServerClient()
 
   const [{ data: teams, error: teamsError }, { data: matches }] = await Promise.all([

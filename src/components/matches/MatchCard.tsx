@@ -11,7 +11,7 @@ interface MatchCardProps {
 
 export function MatchCard({ match }: MatchCardProps) {
   const locale = useLocale()
-  const prefix = locale === 'es' ? '/es' : ''
+  const prefix = `/${locale}`
   const isFinished = match.status === 'finished'
   const isLive = match.status === 'live'
 

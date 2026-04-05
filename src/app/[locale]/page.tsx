@@ -9,7 +9,7 @@ export default function LandingPage() {
   const t = useTranslations('landing')
   const tNav = useTranslations('nav')
   const locale = useLocale()
-  const prefix = locale === 'es' ? '/es' : ''
+  const prefix = `/${locale}`
 
   return (
     <div className="min-h-screen">

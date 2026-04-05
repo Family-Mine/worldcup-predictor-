@@ -5,7 +5,7 @@ import { LanguageToggle } from '@/components/ui/LanguageToggle'
 export function Navbar() {
   const t = useTranslations('nav')
   const locale = useLocale()
-  const prefix = locale === 'es' ? '/es' : ''
+  const prefix = `/${locale}`
 
   return (
     <nav className="border-b border-surface-border bg-surface/90 backdrop-blur-sm sticky top-0 z-50">
