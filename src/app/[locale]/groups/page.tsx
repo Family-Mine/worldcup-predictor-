@@ -7,15 +7,11 @@ export const revalidate = 3600
 
 export default async function GroupsPage() {
   const supabase = getSupabaseServerClient()
-  const { data: teams, error } = await supabase
+  const { data: teams } = await supabase
     .from('teams')
     .select('*')
     .order('group_letter', { ascending: true })
     .order('fifa_ranking', { ascending: true })
-
-  if (error) {
-    console.error('Error fetching teams:', error)
-  }
 
   const groupedTeams = ((teams as Team[]) ?? []).reduce<Record<string, Team[]>>((acc, team) => {
     const g = team.group_letter
