@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "home": "Home",
+    "groups": "Groups",
+    "predictions": "Predictions"
+  },
+  "landing": {
+    "hero_title": "Predict Every Match.",
+    "hero_subtitle": "AI-powered score predictions for every 2026 World Cup match — backed by 2 years of stats.",
+    "cta_unlock": "Unlock Predictions — $4.99",
+    "cta_explore": "Explore Groups",
+    "countdown_label": "Until kickoff",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "seconds": "Seconds"
+  },
+  "groups": {
+    "title": "World Cup Groups",
+    "group": "Group",
+    "ranking": "FIFA Rank"
+  },
+  "teams": {
+    "coach": "Coach",
+    "confederation": "Confederation",
+    "ranking": "FIFA Ranking",
+    "form": "Recent Form",
+    "stats": "2-Year Stats"
+  },
+  "matches": {
+    "vs": "vs",
+    "venue": "Venue",
+    "kickoff": "Kickoff",
+    "unlock_prediction": "Unlock Full Prediction",
+    "unlock_description": "Get win probabilities, predicted score, and AI analysis for every match."
+  },
+  "paywall": {
+    "title": "Unlock All Predictions",
+    "price": "$4.99",
+    "description": "One-time purchase. Access all 104 match predictions through the tournament.",
+    "cta": "Unlock Now"
+  }
+}

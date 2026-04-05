@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "groups": "Grupos",
+    "predictions": "Predicciones"
+  },
+  "landing": {
+    "hero_title": "Predice Cada Partido.",
+    "hero_subtitle": "Predicciones de marcador con IA para cada partido del Mundial 2026 — respaldadas por 2 años de estadísticas.",
+    "cta_unlock": "Desbloquear Predicciones — $4.99",
+    "cta_explore": "Ver Grupos",
+    "countdown_label": "Hasta el pitazo inicial",
+    "days": "Días",
+    "hours": "Horas",
+    "minutes": "Minutos",
+    "seconds": "Segundos"
+  },
+  "groups": {
+    "title": "Grupos del Mundial",
+    "group": "Grupo",
+    "ranking": "Ranking FIFA"
+  },
+  "teams": {
+    "coach": "Entrenador",
+    "confederation": "Confederación",
+    "ranking": "Ranking FIFA",
+    "form": "Forma Reciente",
+    "stats": "Estadísticas 2 Años"
+  },
+  "matches": {
+    "vs": "vs",
+    "venue": "Estadio",
+    "kickoff": "Hora del partido",
+    "unlock_prediction": "Ver Predicción Completa",
+    "unlock_description": "Obtén probabilidades de victoria, marcador predicho y análisis con IA para cada partido."
+  },
+  "paywall": {
+    "title": "Desbloquear Predicciones",
+    "price": "$4.99",
+    "description": "Pago único. Accede a las 104 predicciones de partidos durante todo el torneo.",
+    "cta": "Desbloquear Ahora"
+  }
+}
