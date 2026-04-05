@@ -7,7 +7,7 @@ const withNextIntl = createNextIntlPlugin('./src/i18n.ts')
 const nextConfig = {
   images: {
     remotePatterns: [
-      { hostname: 'flagcdn.com' },
+      { protocol: 'https', hostname: 'flagcdn.com' },
       { protocol: 'https', hostname: '*.supabase.co' },
     ],
   },

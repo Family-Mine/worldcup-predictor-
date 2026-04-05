@@ -7,6 +7,12 @@ describe('utils', () => {
     expect(result).toMatch(/2026/)
   })
 
+  it('formatMatchDateShort returns short month and day', () => {
+    const result = formatMatchDateShort('2026-06-11T15:00:00Z')
+    expect(result).toMatch(/Jun/)
+    expect(result).toMatch(/11/)
+  })
+
   it('cn merges class names', () => {
     expect(cn('foo', 'bar')).toBe('foo bar')
     expect(cn('foo', undefined, 'bar')).toBe('foo bar')
