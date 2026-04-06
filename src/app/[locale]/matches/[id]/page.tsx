@@ -1,7 +1,7 @@
 // src/app/[locale]/matches/[id]/page.tsx
 import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { getPrediction } from '@/lib/getPrediction'
 import { MatchHeader } from '@/components/matches/MatchHeader'
-import { PaywallCTA } from '@/components/predictions/PaywallCTA'
 import { TeamFlag } from '@/components/teams/TeamFlag'
 import type { MatchWithTeams } from '@/types/database'
 import { notFound } from 'next/navigation'
@@ -14,46 +14,69 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const supabase = getSupabaseServerClient()
   const { data: match } = await supabase
     .from('matches')
-    .select(`
-      *,
-      home_team:teams!matches_home_team_id_fkey(name),
-      away_team:teams!matches_away_team_id_fkey(name)
-    `)
+    .select('*, home_team:teams!matches_home_team_id_fkey(name), away_team:teams!matches_away_team_id_fkey(name)')
     .eq('id', params.id)
     .single()
-
   if (!match) return { title: 'Match' }
-
   const m = match as MatchWithTeams
   return {
     title: `${m.home_team.name} vs ${m.away_team.name}`,
-    description: `Match prediction and analysis for ${m.home_team.name} vs ${m.away_team.name} — 2026 FIFA World Cup`,
+    description: `AI prediction for ${m.home_team.name} vs ${m.away_team.name} — 2026 FIFA World Cup`,
   }
 }
 
-export default async function MatchPage({ params }: { params: { id: string } }) {
+function ProbBar({ label, prob, color }: { label: string; prob: number; color: string }) {
+  const pct = Math.round(prob * 100)
+  return (
+    <div className="flex-1 text-center">
+      <p className="text-xs text-slate-400 mb-1">{label}</p>
+      <div className="h-2 bg-surface-border rounded-full overflow-hidden mb-1">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
+      </div>
+      <p className="text-lg font-bold text-white">{pct}%</p>
+    </div>
+  )
+}
+
+function ConfidenceBadge({ level }: { level: 'high' | 'medium' | 'low' }) {
+  const cfg = {
+    high:   { label: 'High confidence',   cls: 'bg-green-500/20 text-green-400' },
+    medium: { label: 'Medium confidence', cls: 'bg-yellow-500/20 text-yellow-400' },
+    low:    { label: 'Low confidence',    cls: 'bg-red-500/20 text-red-400' },
+  }[level]
+  return (
+    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.cls}`}>
+      {cfg.label}
+    </span>
+  )
+}
+
+export default async function MatchPage({
+  params,
+}: {
+  params: { id: string; locale: string }
+}) {
   const supabase = getSupabaseServerClient()
+  const locale = params.locale
+  const prefix = `/${locale}`
 
   const { data: match, error } = await supabase
     .from('matches')
-    .select(`
-      *,
-      home_team:teams!matches_home_team_id_fkey(*),
-      away_team:teams!matches_away_team_id_fkey(*)
-    `)
+    .select('*, home_team:teams!matches_home_team_id_fkey(*), away_team:teams!matches_away_team_id_fkey(*)')
     .eq('id', params.id)
     .single()
 
   if (error || !match) notFound()
 
   const m = match as MatchWithTeams
+  const prediction = await getPrediction(params.id)
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
-      {/* Back link */}
+      {/* Back */}
       {m.group_letter && (
         <div className="mb-6">
-          <Link href={`/groups/${m.group_letter}`} className="text-slate-500 text-sm hover:text-slate-300">
+          <Link href={`${prefix}/groups/${m.group_letter}`} className="text-slate-500 text-sm hover:text-slate-300">
             ← Group {m.group_letter}
           </Link>
         </div>
@@ -62,8 +85,55 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
       {/* Match header */}
       <MatchHeader match={m} />
 
-      {/* Head to head placeholder */}
-      <div className="mt-8 bg-surface-card border border-surface-border rounded-xl p-6">
+      {/* Prediction */}
+      {prediction && (
+        <div className="mt-8 bg-surface-card border border-surface-border rounded-xl p-6">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-lg font-bold text-white">AI Prediction</h2>
+            <ConfidenceBadge level={prediction.confidence_level} />
+          </div>
+
+          {/* Probability bars */}
+          <div className="flex gap-4 mb-6">
+            <ProbBar
+              label={m.home_team.name}
+              prob={prediction.home_win_prob}
+              color="bg-fifa-gold"
+            />
+            <ProbBar
+              label="Draw"
+              prob={prediction.draw_prob}
+              color="bg-slate-500"
+            />
+            <ProbBar
+              label={m.away_team.name}
+              prob={prediction.away_win_prob}
+              color="bg-fifa-green"
+            />
+          </div>
+
+          {/* Predicted score */}
+          <div className="flex items-center justify-center gap-6 py-4 border-t border-surface-border">
+            <div className="flex items-center gap-2">
+              <TeamFlag countryCode={m.home_team.country_code} name={m.home_team.name} size="md" />
+              <span className="text-sm text-slate-300">{m.home_team.name}</span>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">Predicted Score</p>
+              <span className="text-4xl font-black text-white tabular-nums">
+                {prediction.predicted_home_score} – {prediction.predicted_away_score}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-300">{m.away_team.name}</span>
+              <TeamFlag countryCode={m.away_team.country_code} name={m.away_team.name} size="md" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Head to head */}
+      <div className="mt-6 bg-surface-card border border-surface-border rounded-xl p-6">
         <h2 className="text-lg font-bold text-white mb-4">Head to Head</h2>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -76,11 +146,6 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
             <TeamFlag countryCode={m.away_team.country_code} name={m.away_team.name} size="sm" />
           </div>
         </div>
-      </div>
-
-      {/* Paywall CTA */}
-      <div className="mt-8">
-        <PaywallCTA />
       </div>
     </div>
   )
