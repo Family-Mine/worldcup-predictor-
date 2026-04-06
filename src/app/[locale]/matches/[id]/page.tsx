@@ -1,8 +1,10 @@
 // src/app/[locale]/matches/[id]/page.tsx
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { getPrediction } from '@/lib/getPrediction'
+import { hasActiveSubscription } from '@/lib/subscription'
 import { MatchHeader } from '@/components/matches/MatchHeader'
 import { TeamFlag } from '@/components/teams/TeamFlag'
+import { PaywallGate } from '@/components/predictions/PaywallGate'
 import type { MatchWithTeams } from '@/types/database'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -69,7 +71,11 @@ export default async function MatchPage({
   if (error || !match) notFound()
 
   const m = match as MatchWithTeams
-  const prediction = await getPrediction(params.id)
+
+  // Auth + subscription check
+  const { data: { user } } = await supabase.auth.getUser()
+  const isPaid = user ? await hasActiveSubscription(user.id) : false
+  const prediction = isPaid ? await getPrediction(params.id) : null
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
@@ -140,6 +146,13 @@ export default async function MatchPage({
               <TeamFlag countryCode={m.away_team.country_code} name={m.away_team.name} size="md" />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Paywall — shown when not paid */}
+      {!isPaid && (
+        <div className="mt-8">
+          <PaywallGate isLoggedIn={!!user} />
         </div>
       )}
 
