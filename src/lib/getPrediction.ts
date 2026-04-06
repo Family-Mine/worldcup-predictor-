@@ -1,5 +1,6 @@
 // src/lib/getPrediction.ts
 import { createClient } from '@supabase/supabase-js'
+import Anthropic from '@anthropic-ai/sdk'
 import { calculatePrediction } from './poisson'
 
 const CACHE_HOURS = 6
@@ -110,6 +111,53 @@ export async function getPrediction(matchId: string): Promise<Prediction | null>
     ai_narrative_en:      null,
     ai_narrative_es:      null,
     updated_at:           new Date().toISOString(),
+  }
+
+  // Generate Claude narratives if API key is available
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+      const { data: matchFull } = await supabase
+        .from('matches')
+        .select('*, home_team:teams!matches_home_team_id_fkey(name,fifa_ranking,confederation,current_form), away_team:teams!matches_away_team_id_fkey(name,fifa_ranking,confederation,current_form)')
+        .eq('id', matchId)
+        .single()
+
+      if (matchFull) {
+        const home = matchFull.home_team as { name: string; fifa_ranking: number; confederation: string; current_form: string }
+        const away = matchFull.away_team as { name: string; fifa_ranking: number; confederation: string; current_form: string }
+        const scoreStr = `${prediction.predicted_home_score}–${prediction.predicted_away_score}`
+        const winner = prediction.predicted_winner === 'home' ? home.name : prediction.predicted_winner === 'away' ? away.name : 'a draw'
+        const probStr = `${home.name} ${Math.round(prediction.home_win_prob * 100)}% / Draw ${Math.round(prediction.draw_prob * 100)}% / ${away.name} ${Math.round(prediction.away_win_prob * 100)}%`
+
+        const baseContext = `
+${home.name} (FIFA #${home.fifa_ranking}, ${home.confederation}, form: ${home.current_form ?? 'N/A'}) vs ${away.name} (FIFA #${away.fifa_ranking}, ${away.confederation}, form: ${away.current_form ?? 'N/A'}).
+Predicted score: ${scoreStr}. Expected winner: ${winner}. Probabilities: ${probStr}. Confidence: ${prediction.confidence_level}.
+Task: Write exactly 3 sentences of match analysis explaining this prediction. Tone: analytical and confident.`
+
+        const [enRes, esRes] = await Promise.all([
+          anthropic.messages.create({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 200,
+            messages: [{ role: 'user', content: baseContext + ' Language: English.' }],
+          }),
+          anthropic.messages.create({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 200,
+            messages: [{ role: 'user', content: baseContext + ' Language: Spanish.' }],
+          }),
+        ])
+
+        const getText = (res: Anthropic.Message) =>
+          res.content[0]?.type === 'text' ? res.content[0].text.trim() : null
+
+        prediction.ai_narrative_en = getText(enRes)
+        prediction.ai_narrative_es = getText(esRes)
+      }
+    } catch {
+      // Narratives are optional — continue without them
+    }
   }
 
   await supabase.from('predictions').upsert(prediction, { onConflict: 'match_id' })

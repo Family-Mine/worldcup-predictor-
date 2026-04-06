@@ -112,6 +112,17 @@ export default async function MatchPage({
             />
           </div>
 
+          {/* AI Narrative */}
+          {(prediction.ai_narrative_en || prediction.ai_narrative_es) && (
+            <div className="mb-5 p-4 bg-surface rounded-lg border border-surface-border">
+              <p className="text-sm text-slate-300 leading-relaxed italic">
+                {locale === 'es'
+                  ? (prediction.ai_narrative_es ?? prediction.ai_narrative_en)
+                  : (prediction.ai_narrative_en ?? prediction.ai_narrative_es)}
+              </p>
+            </div>
+          )}
+
           {/* Predicted score */}
           <div className="flex items-center justify-center gap-6 py-4 border-t border-surface-border">
             <div className="flex items-center gap-2">
