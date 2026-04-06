@@ -74,7 +74,7 @@ export default async function MatchPage({
 
   // Auth + subscription check
   const { data: { user } } = await supabase.auth.getUser()
-  const isPaid = user ? await hasActiveSubscription(user.id) : false
+  const isPaid = user ? await hasActiveSubscription(supabase, user.id) : false
   const prediction = isPaid ? await getPrediction(params.id) : null
 
   return (
