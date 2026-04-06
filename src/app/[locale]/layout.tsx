@@ -31,14 +31,25 @@ export default async function LocaleLayout({
 }) {
   const messages = await getMessages({ locale })
 
+  // Get current user for navbar
+  const { createServerClient } = await import('@supabase/ssr')
+  const { cookies } = await import('next/headers')
+  const cookieStore = cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <html lang={locale} className="dark">
       <body className={`${inter.className} bg-surface text-slate-100 min-h-screen`}>
         <NextIntlClientProvider messages={messages}>
-            <Navbar />
-            <main>{children}</main>
-            <Footer />
-          </NextIntlClientProvider>
+          <Navbar user={user} />
+          <main>{children}</main>
+          <Footer />
+        </NextIntlClientProvider>
       </body>
     </html>
   )
