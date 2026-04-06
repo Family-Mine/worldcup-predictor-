@@ -79,6 +79,10 @@ export default async function MatchPage({
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
+      {/* DEBUG — remove after confirming */}
+      <div className="mb-4 p-2 bg-red-900 text-white text-xs rounded">
+        DEBUG: user={user?.email ?? 'null'} | isPaid={String(isPaid)}
+      </div>
       {/* Back */}
       {m.group_letter && (
         <div className="mb-6">
