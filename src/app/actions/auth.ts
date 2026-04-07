@@ -15,7 +15,7 @@ export async function signIn(formData: FormData) {
     return { error: error.message }
   }
 
-  redirect(`/${locale}`)
+  return { success: true, locale }
 }
 
 export async function signUp(formData: FormData) {

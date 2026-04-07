@@ -1,14 +1,15 @@
 // src/app/[locale]/page.tsx
 import { useTranslations, useLocale } from 'next-intl'
+import { setRequestLocale } from 'next-intl/server'
 import Link from 'next/link'
 import { CountdownTimer } from '@/components/ui/CountdownTimer'
 
 const WORLD_CUP_KICKOFF = '2026-06-11T18:00:00Z'
 
-export default function LandingPage() {
+export default function LandingPage({ params: { locale } }: { params: { locale: string } }) {
+  setRequestLocale(locale)
   const t = useTranslations('landing')
   const tNav = useTranslations('nav')
-  const locale = useLocale()
   const prefix = `/${locale}`
 
   return (

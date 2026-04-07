@@ -32,6 +32,21 @@ export function Navbar({ user }: NavbarProps) {
             {t('groups')}
           </Link>
 
+          <Link
+            href={`${prefix}/predictions/group-phase`}
+            className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-fifa-gold hover:text-yellow-300 transition-colors"
+          >
+            <span className="text-xs">★</span>
+            Group Bundle
+          </Link>
+
+          <Link
+            href={`${prefix}/pools`}
+            className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-slate-300 hover:text-white transition-colors"
+          >
+            👥 Grupos
+          </Link>
+
           <LanguageToggle />
 
           {user ? (

@@ -9,6 +9,7 @@ import type { MatchWithTeams } from '@/types/database'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { BettingLinksBar } from '@/components/betting/BettingLinksBar'
 
 export const dynamic = 'force-dynamic'
 
@@ -79,10 +80,6 @@ export default async function MatchPage({
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
-      {/* DEBUG — remove after confirming */}
-      <div className="mb-4 p-2 bg-red-900 text-white text-xs rounded">
-        DEBUG: user={user?.email ?? 'null'} | isPaid={String(isPaid)}
-      </div>
       {/* Back */}
       {m.group_letter && (
         <div className="mb-6">
@@ -159,6 +156,11 @@ export default async function MatchPage({
           <PaywallGate isLoggedIn={!!user} />
         </div>
       )}
+
+      {/* Betting links */}
+      <div className="mt-6">
+        <BettingLinksBar matchLabel={`${m.home_team.name} vs ${m.away_team.name}`} />
+      </div>
 
       {/* Head to head */}
       <div className="mt-6 bg-surface-card border border-surface-border rounded-xl p-6">

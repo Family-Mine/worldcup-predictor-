@@ -32,19 +32,45 @@ export async function POST(req: NextRequest) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
     const userId = session.metadata?.user_id
+    const productType = session.metadata?.product_type ?? 'predictions'
 
     if (userId && session.payment_status === 'paid') {
       const supabase = db()
-      await supabase.from('subscriptions').upsert(
-        {
-          user_id: userId,
-          stripe_customer_id: session.customer as string,
-          stripe_payment_intent_id: session.payment_intent as string,
-          status: 'active',
-          expires_at: '2026-08-01T00:00:00Z',
-        },
-        { onConflict: 'user_id' }
-      )
+
+      if (productType === 'group_bundle') {
+        // Group bundle ($9.99) includes base subscription + group phase access
+        await Promise.all([
+          supabase.from('subscriptions').upsert(
+            {
+              user_id: userId,
+              stripe_customer_id: session.customer as string,
+              stripe_payment_intent_id: session.payment_intent as string,
+              status: 'active',
+              expires_at: '2026-08-01T00:00:00Z',
+            },
+            { onConflict: 'user_id' }
+          ),
+          supabase.from('user_add_ons').upsert(
+            {
+              user_id: userId,
+              add_on: 'group_bundle',
+              stripe_payment_intent_id: session.payment_intent as string,
+            },
+            { onConflict: 'user_id,add_on' }
+          ),
+        ])
+      } else {
+        await supabase.from('subscriptions').upsert(
+          {
+            user_id: userId,
+            stripe_customer_id: session.customer as string,
+            stripe_payment_intent_id: session.payment_intent as string,
+            status: 'active',
+            expires_at: '2026-08-01T00:00:00Z',
+          },
+          { onConflict: 'user_id' }
+        )
+      }
     }
   }
 
