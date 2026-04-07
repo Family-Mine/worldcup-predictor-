@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS tournament_top_scorer (
 
 ALTER TABLE tournament_top_scorer ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "top_scorer_select" ON tournament_top_scorer FOR SELECT USING (true);
+-- No INSERT/UPDATE policy needed: service_role bypasses RLS entirely.
 
 -- 5. Actualizar función calculate_pool_points para separar por fase
 CREATE OR REPLACE FUNCTION calculate_pool_points(
@@ -43,19 +44,21 @@ AS $$
 BEGIN
   -- Paso 1: asignar puntos a cada pick de este partido
   UPDATE pool_picks
-  SET points_awarded = CASE
-    WHEN home_score = p_actual_home AND away_score = p_actual_away THEN 3
-    WHEN (
-      CASE WHEN home_score > away_score THEN 'home'
-           WHEN home_score < away_score THEN 'away'
-           ELSE 'draw' END
-    ) = (
-      CASE WHEN p_actual_home > p_actual_away THEN 'home'
-           WHEN p_actual_home < p_actual_away THEN 'away'
-           ELSE 'draw' END
-    ) THEN 1
-    ELSE 0
-  END
+  SET
+    points_awarded = CASE
+      WHEN home_score = p_actual_home AND away_score = p_actual_away THEN 3
+      WHEN (
+        CASE WHEN home_score > away_score THEN 'home'
+             WHEN home_score < away_score THEN 'away'
+             ELSE 'draw' END
+      ) = (
+        CASE WHEN p_actual_home > p_actual_away THEN 'home'
+             WHEN p_actual_home < p_actual_away THEN 'away'
+             ELSE 'draw' END
+      ) THEN 1
+      ELSE 0
+    END,
+    updated_at = now()
   WHERE match_id = p_match_id;
 
   -- Paso 2: recalcular leaderboard con puntos separados por fase
@@ -69,9 +72,9 @@ BEGIN
     pp.user_id,
     COALESCE(SUM(pp.points_awarded), 0),
     COALESCE(SUM(pp.points_awarded) FILTER (WHERE m.stage = 'group'), 0),
-    COALESCE(SUM(pp.points_awarded) FILTER (WHERE m.stage <> 'group'), 0),
+    COALESCE(SUM(pp.points_awarded) FILTER (WHERE m.stage IS DISTINCT FROM 'group'), 0),
     COUNT(*) FILTER (WHERE pp.points_awarded = 3),
-    COUNT(*) FILTER (WHERE pp.points_awarded >= 1),
+    COUNT(*) FILTER (WHERE pp.points_awarded = 1),
     now()
   FROM pool_picks pp
   JOIN matches m ON m.id = pp.match_id
