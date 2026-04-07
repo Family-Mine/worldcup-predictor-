@@ -15,10 +15,52 @@ interface PicksGridProps {
 
 type ScoreMap = Record<string, { home: string; away: string; saved: boolean; error?: string }>
 
-export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
-  const [isPending, startTransition] = useTransition()
+/** Renders a team name+flag or its TBD slot label */
+function TeamLabel({ team, slot, side }: {
+  team: MatchWithTeams['home_team']
+  slot: string | null
+  side: 'home' | 'away'
+}) {
+  if (!team) {
+    return (
+      <span className="text-xs font-mono font-bold text-slate-500 bg-surface-border px-2 py-1 rounded">
+        {slot ?? '?'}
+      </span>
+    )
+  }
+  return (
+    <div className={`flex items-center gap-2 ${side === 'home' ? 'flex-row-reverse' : 'flex-row'}`}>
+      {team.flag_url && (
+        <Image
+          src={team.flag_url}
+          alt={team.name}
+          width={24} height={16}
+          className="rounded-sm object-cover"
+          unoptimized
+        />
+      )}
+      <span className="text-sm font-medium text-slate-300 hidden sm:block truncate max-w-[100px]">
+        {team.name}
+      </span>
+    </div>
+  )
+}
 
-  // Build initial state from existing picks
+function stageLabel(stage: string): string {
+  const labels: Record<string, string> = {
+    r32:   'Ronda de 32',
+    r16:   'Octavos de Final',
+    qf:    'Cuartos de Final',
+    sf:    'Semifinales',
+    '3rd': 'Tercer Lugar',
+    final: 'Final',
+  }
+  return labels[stage] ?? stage
+}
+
+export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
+  const [, startTransition] = useTransition()
+
   const initial: ScoreMap = {}
   for (const p of existingPicks) {
     initial[p.match_id] = {
@@ -39,7 +81,6 @@ export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
   function save(match: MatchWithTeams) {
     const s = scores[match.id]
     if (!s) return
-    // Don't save or error if either field is still empty
     if (s.home === '' || s.away === '') return
     const home = parseInt(s.home, 10)
     const away = parseInt(s.away, 10)
@@ -61,29 +102,32 @@ export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
     })
   }
 
-  // Group by group_letter
+  // Group by group_letter (group phase) or by stage (knockout)
   const groups: Record<string, MatchWithTeams[]> = {}
   for (const m of matches) {
-    const g = m.group_letter ?? 'Knockout'
-    if (!groups[g]) groups[g] = []
-    groups[g].push(m)
+    const key = m.group_letter
+      ? `Grupo ${m.group_letter}`
+      : stageLabel(m.stage)
+    if (!groups[key]) groups[key] = []
+    groups[key].push(m)
   }
 
   return (
     <div className="space-y-6">
-      {Object.entries(groups).sort(([a], [b]) => a.localeCompare(b)).map(([letter, gMatches]) => (
-        <div key={letter} className="bg-surface-card border border-surface-border rounded-xl overflow-hidden">
-          {/* Group header */}
+      {Object.entries(groups).sort(([a], [b]) => a.localeCompare(b)).map(([groupKey, gMatches]) => (
+        <div key={groupKey} className="bg-surface-card border border-surface-border rounded-xl overflow-hidden">
+          {/* Group/stage header */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-surface-border bg-white/[0.02]">
             <span className="w-7 h-7 rounded-lg bg-fifa-gold/10 border border-fifa-gold/30 flex items-center justify-center text-xs font-black text-fifa-gold">
-              {letter}
+              {groupKey.replace('Grupo ', '')}
             </span>
-            <span className="text-sm font-semibold text-slate-300">Grupo {letter}</span>
+            <span className="text-sm font-semibold text-slate-300">{groupKey}</span>
           </div>
 
           <div className="divide-y divide-surface-border/50">
             {gMatches.map(match => {
-              const locked = isMatchLocked(match)
+              const isTBD = match.home_team_id === null || match.away_team_id === null
+              const locked = isTBD || isMatchLocked(match)
               const s = scores[match.id] ?? { home: '', away: '', saved: false }
               const hasPick = s.home !== '' && s.away !== ''
               const kickoff = new Date(match.scheduled_at).toLocaleDateString('es', {
@@ -94,19 +138,8 @@ export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
                 <div key={match.id} className={`px-4 py-3 ${locked ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-3">
                     {/* Home team */}
-                    <div className="flex items-center gap-2 flex-1 justify-end">
-                      <span className="text-sm font-medium text-slate-300 hidden sm:block truncate max-w-[100px] text-right">
-                        {match.home_team.name}
-                      </span>
-                      {match.home_team.flag_url && (
-                        <Image
-                          src={match.home_team.flag_url}
-                          alt={match.home_team.name}
-                          width={24} height={16}
-                          className="rounded-sm object-cover"
-                          unoptimized
-                        />
-                      )}
+                    <div className="flex items-center flex-1 justify-end">
+                      <TeamLabel team={match.home_team} slot={match.home_slot} side="home" />
                     </div>
 
                     {/* Score inputs */}
@@ -139,24 +172,15 @@ export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
                     </div>
 
                     {/* Away team */}
-                    <div className="flex items-center gap-2 flex-1">
-                      {match.away_team.flag_url && (
-                        <Image
-                          src={match.away_team.flag_url}
-                          alt={match.away_team.name}
-                          width={24} height={16}
-                          className="rounded-sm object-cover"
-                          unoptimized
-                        />
-                      )}
-                      <span className="text-sm font-medium text-slate-300 hidden sm:block truncate max-w-[100px]">
-                        {match.away_team.name}
-                      </span>
+                    <div className="flex items-center flex-1">
+                      <TeamLabel team={match.away_team} slot={match.away_slot} side="away" />
                     </div>
 
                     {/* Status */}
-                    <div className="w-16 text-right flex-shrink-0">
-                      {locked ? (
+                    <div className="w-20 text-right flex-shrink-0">
+                      {isTBD ? (
+                        <span className="text-xs text-slate-600">Por definir</span>
+                      ) : locked ? (
                         <span className="text-xs text-slate-600">🔒 Cerrado</span>
                       ) : s.error ? (
                         <span className="text-xs text-red-400">Error</span>
