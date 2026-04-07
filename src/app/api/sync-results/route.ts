@@ -1,13 +1,11 @@
 // src/app/api/sync-results/route.ts
-// Called by Vercel Cron every 6 hours (and manually via GET with secret)
+// Vercel Cron diario — sincroniza resultados + equipos knockout + goleador
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const FD_BASE = 'https://api.football-data.org/v4'
-// FIFA World Cup 2026 competition code on football-data.org
 const WC_CODE = 'WC'
 
-// Map football-data.org team names → our DB names
 const TEAM_NAME_MAP: Record<string, string> = {
   'Mexico':                   'Mexico',
   'South Africa':             'South Africa',
@@ -65,7 +63,7 @@ const TEAM_NAME_MAP: Record<string, string> = {
   'Panama':                   'Panama',
 }
 
-function mapStatus(fdStatus: string): string {
+function mapStatus(fdStatus: string): 'scheduled' | 'live' | 'finished' {
   switch (fdStatus) {
     case 'IN_PLAY':
     case 'PAUSED':
@@ -83,8 +81,146 @@ function db() {
   )
 }
 
+// ── 1. Sync de resultados ─────────────────────────────────────────────────────
+
+async function syncResults(
+  supabase: ReturnType<typeof db>,
+  fdMatches: FDMatch[],
+  teamIdByName: Record<string, string>
+): Promise<{ updated: number; skipped: number; pointsCalc: number }> {
+  let updated = 0, skipped = 0, pointsCalc = 0
+
+  for (const fdm of fdMatches) {
+    const homeName = TEAM_NAME_MAP[fdm.homeTeam.name] ?? fdm.homeTeam.name
+    const awayName = TEAM_NAME_MAP[fdm.awayTeam.name] ?? fdm.awayTeam.name
+    const homeId = teamIdByName[homeName]
+    const awayId = teamIdByName[awayName]
+
+    if (!homeId || !awayId) { skipped++; continue }
+
+    const status = mapStatus(fdm.status)
+    const homeScore = fdm.score?.fullTime?.home ?? null
+    const awayScore = fdm.score?.fullTime?.away ?? null
+
+    const { error } = await supabase
+      .from('matches')
+      .update({ status, home_score: homeScore, away_score: awayScore })
+      .eq('home_team_id', homeId)
+      .eq('away_team_id', awayId)
+
+    if (error) continue
+    updated++
+
+    // Calculate pool points when a match finishes with a score
+    if (status === 'finished' && homeScore !== null && awayScore !== null) {
+      const { data: match } = await supabase
+        .from('matches')
+        .select('id')
+        .eq('home_team_id', homeId)
+        .eq('away_team_id', awayId)
+        .single()
+
+      if (match) {
+        await supabase.rpc('calculate_pool_points', {
+          p_match_id:    match.id,
+          p_actual_home: homeScore,
+          p_actual_away: awayScore,
+        })
+        pointsCalc++
+
+        // Invalidate prediction cache
+        await supabase
+          .from('predictions')
+          .update({ updated_at: new Date(0).toISOString() })
+          .eq('match_id', match.id)
+      }
+    }
+  }
+
+  return { updated, skipped, pointsCalc }
+}
+
+// ── 2. Sync de equipos knockout ───────────────────────────────────────────────
+
+async function syncKnockoutTeams(
+  supabase: ReturnType<typeof db>,
+  fdMatches: FDMatch[],
+  teamIdByName: Record<string, string>
+): Promise<{ resolved: number }> {
+  // Get knockout matches with TBD teams from our DB
+  const { data: tbdMatches } = await supabase
+    .from('matches')
+    .select('id, scheduled_at')
+    .neq('stage', 'group')
+    .is('home_team_id', null)
+
+  if (!tbdMatches?.length) return { resolved: 0 }
+
+  let resolved = 0
+
+  for (const dbMatch of tbdMatches) {
+    const dbTime = new Date(dbMatch.scheduled_at).getTime()
+
+    // Match by kickoff time (5-minute tolerance)
+    const fdm = fdMatches.find(m => {
+      const apiTime = new Date(m.utcDate).getTime()
+      return Math.abs(apiTime - dbTime) < 5 * 60 * 1000
+    })
+    if (!fdm) continue
+
+    const homeName = TEAM_NAME_MAP[fdm.homeTeam.name] ?? fdm.homeTeam.name
+    const awayName = TEAM_NAME_MAP[fdm.awayTeam.name] ?? fdm.awayTeam.name
+    const homeId = teamIdByName[homeName]
+    const awayId = teamIdByName[awayName]
+
+    // Only update when both teams are confirmed in the API
+    if (!homeId || !awayId) continue
+
+    const { error } = await supabase
+      .from('matches')
+      .update({ home_team_id: homeId, away_team_id: awayId })
+      .eq('id', dbMatch.id)
+
+    if (!error) resolved++
+  }
+
+  return { resolved }
+}
+
+// ── 3. Sync de goleador ───────────────────────────────────────────────────────
+
+async function syncTopScorer(
+  supabase: ReturnType<typeof db>,
+  apiKey: string
+): Promise<{ player: string | null }> {
+  const res = await fetch(`${FD_BASE}/competitions/${WC_CODE}/scorers?limit=1`, {
+    headers: { 'X-Auth-Token': apiKey },
+    next: { revalidate: 0 },
+  })
+
+  if (!res.ok) return { player: null }
+
+  const data = await res.json()
+  const top = data.scorers?.[0]
+  if (!top) return { player: null }
+
+  const playerName: string = top.player?.name ?? ''
+  const teamName: string   = top.team?.name   ?? ''
+  const goals: number      = top.goals        ?? 0
+
+  if (!playerName) return { player: null }
+
+  await supabase.from('tournament_top_scorer').upsert(
+    { id: 1, player_name: playerName, team_name: teamName, goals, updated_at: new Date().toISOString() },
+    { onConflict: 'id' }
+  )
+
+  return { player: playerName }
+}
+
+// ── Handler principal ─────────────────────────────────────────────────────────
+
 export async function GET(req: NextRequest) {
-  // Protect manual calls with a secret (Vercel Cron sends Authorization header automatically)
   const authHeader = req.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
@@ -97,7 +233,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Fetch all World Cup matches from football-data.org
+    // Fetch all WC matches once — reused by syncResults and syncKnockoutTeams
     const res = await fetch(`${FD_BASE}/competitions/${WC_CODE}/matches`, {
       headers: { 'X-Auth-Token': apiKey },
       next: { revalidate: 0 },
@@ -118,60 +254,19 @@ export async function GET(req: NextRequest) {
     const teamIdByName: Record<string, string> = {}
     for (const t of teams ?? []) teamIdByName[t.name] = t.id
 
-    let updated = 0
-    let skipped = 0
-
-    for (const fdm of fdMatches) {
-      const homeName = TEAM_NAME_MAP[fdm.homeTeam.name] ?? fdm.homeTeam.name
-      const awayName = TEAM_NAME_MAP[fdm.awayTeam.name] ?? fdm.awayTeam.name
-      const homeId = teamIdByName[homeName]
-      const awayId = teamIdByName[awayName]
-
-      if (!homeId || !awayId) {
-        skipped++
-        continue
-      }
-
-      const status = mapStatus(fdm.status)
-      const homeScore = fdm.score?.fullTime?.home ?? null
-      const awayScore = fdm.score?.fullTime?.away ?? null
-
-      const { error } = await supabase
-        .from('matches')
-        .update({
-          status,
-          home_score: homeScore,
-          away_score: awayScore,
-        })
-        .eq('home_team_id', homeId)
-        .eq('away_team_id', awayId)
-
-      if (!error) {
-        updated++
-        // Invalidate prediction cache if match just finished
-        if (status === 'finished') {
-          const { data: match } = await supabase
-            .from('matches')
-            .select('id')
-            .eq('home_team_id', homeId)
-            .eq('away_team_id', awayId)
-            .single()
-          if (match) {
-            await supabase
-              .from('predictions')
-              .update({ updated_at: new Date(0).toISOString() })
-              .eq('match_id', match.id)
-          }
-        }
-      }
-    }
+    // Run all 3 sync tasks in parallel
+    const [resultsOut, knockoutOut, scorerOut] = await Promise.all([
+      syncResults(supabase, fdMatches, teamIdByName),
+      syncKnockoutTeams(supabase, fdMatches, teamIdByName),
+      syncTopScorer(supabase, apiKey),
+    ])
 
     return NextResponse.json({
       ok: true,
-      total: fdMatches.length,
-      updated,
-      skipped,
       timestamp: new Date().toISOString(),
+      results:  resultsOut,
+      knockout: knockoutOut,
+      scorer:   scorerOut,
     })
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })
@@ -179,6 +274,7 @@ export async function GET(req: NextRequest) {
 }
 
 interface FDMatch {
+  utcDate: string
   status: string
   homeTeam: { name: string }
   awayTeam: { name: string }
