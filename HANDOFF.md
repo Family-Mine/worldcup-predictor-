@@ -28,7 +28,10 @@ Tablas principales: `teams`, `matches`, `predictions`, `subscriptions`, `user_ad
 
 Tablas de quinelas: `profiles`, `pools`, `pool_members`, `pool_picks`, `pool_special_picks`, `pool_leaderboard`
 
-Schema de quinelas: `supabase/pools_schema.sql`
+**Nueva (knockout phase):** `tournament_top_scorer` — singleton (id=1, CHECK), se upsertea en cada cron con el goleador actual
+
+Schema de quinelas: `supabase/pools_schema.sql`  
+**Migración knockout:** `supabase/migrations/knockout_phase.sql` — ⚠️ pendiente de aplicar en producción
 
 ### RLS — Puntos críticos
 - `pool_members_select` usa `auth_is_pool_member(pool_id)` (SECURITY DEFINER) para evitar recursión infinita
@@ -39,7 +42,7 @@ Schema de quinelas: `supabase/pools_schema.sql`
 ### Funciones en Supabase (aplicadas manualmente, no en el schema SQL)
 - `auth_is_pool_member(p_pool_id uuid)` — verifica membresía sin recursión RLS
 - `get_pool_id_by_invite_code(p_code text)` — lookup de pool para join flow
-- `calculate_pool_points(p_match_id, p_actual_home, p_actual_away)` — calcula puntos tras resultado real
+- `calculate_pool_points(p_match_id, p_actual_home, p_actual_away)` — calcula puntos tras resultado real; v2 (knockout_phase.sql) separa en `group_points` / `knockout_points` según `stage` del partido
 
 ## Sistema de suscripciones (Stripe)
 - **Base** (`subscription`): $4.99 → acceso a predicciones individuales
@@ -53,23 +56,46 @@ Schema de quinelas: `supabase/pools_schema.sql`
 - Marcador exacto = 3 pts
 - Ganador correcto (sin marcador exacto) = 1 pt
 - Incorrecto = 0 pts
+- Misma lógica en fase de grupos y fase knockout
+- 3 premios separados: **Fase Grupos** (`group_points`) · **Fase Knockout** (`knockout_points`) · **Goleador** (comparación de nombre normalizado contra `tournament_top_scorer`)
 - Picks se cierran 5 min antes del partido (`isMatchLocked` en `src/lib/pools.ts`)
 - Score inputs: `type="text" inputMode="numeric"` (no `type="number"` — evita flechas que descentran texto)
 - Auto-save en `onBlur` — solo guarda si AMBOS campos tienen valor
 - `joinPool` usa RPC `get_pool_id_by_invite_code` para bypasear RLS
 - Locale se pasa como hidden form field en createPool y joinPool
 
+### Fase knockout — TBD teams
+- `matches.home_team_id` / `away_team_id` son nullable; slots `home_slot`/`away_slot` muestran "1A", "W49", etc.
+- PicksGrid bloquea inputs cuando `home_team_id IS NULL`
+- Cron `sync-results` rellena team IDs cuando football-data.org los confirma (matching por kickoff ±5 min)
+- Tab Knockout en picks page muestra banner hasta que haya al menos un equipo confirmado
+
 ## Archivos clave
 | Archivo | Qué hace |
 |---------|----------|
 | `src/app/actions/pools.ts` | Server actions: createPool, joinPool, submitPick, submitSpecialPick |
 | `src/lib/pools.ts` | isMatchLocked, computePoints, inviteUrl |
-| `src/types/pools.ts` | Tipos TypeScript del módulo quinelas |
-| `src/components/pools/PicksGrid.tsx` | Grid de predicciones por partido |
-| `src/components/pools/PoolLeaderboard.tsx` | Tabla de posiciones |
+| `src/types/pools.ts` | Tipos del módulo quinelas — incl. `TournamentTopScorer`, `PoolLeaderboardEntry` con `group_points`/`knockout_points` |
+| `src/types/database.ts` | Tipos DB — `Match` con `home_team_id: string \| null`, `home_slot`, `away_slot`; `MatchWithTeams` con teams nullable |
+| `src/components/pools/PicksGrid.tsx` | Grid de predicciones — maneja TBD teams con slot labels, stages knockout con orden correcto |
+| `src/components/pools/PoolLeaderboard.tsx` | Tabla de posiciones — tabs General/Grupos/Knockout + sección Goleador fija |
 | `src/components/pools/InviteCodeBanner.tsx` | Banner con código + botones copiar independientes |
 | `src/components/pools/SpecialPicksForm.tsx` | Formulario goleador |
+| `src/app/api/sync-results/route.ts` | Cron diario: sync resultados + knockout teams + goleador (en ese orden) |
+| `supabase/migrations/knockout_phase.sql` | Migración completa de fase knockout (⚠️ aplicar en producción) |
+| `scripts/seed_knockout_matches.py` | Seed one-time de 32 partidos knockout con slots TBD (requiere SUPABASE_SERVICE_ROLE_KEY) |
 | `scripts/sync_data_v2.py` | Scraping Wikipedia para stats de equipos (45/48 teams — USA/MX/CA son hosts) |
+
+## Fase knockout — Estado del PR
+**PR:** Family-Mine/worldcup-predictor-#1 — `feat/knockout-phase` → `main`
+
+**Antes de mergear (checklist):**
+1. Aplicar `supabase/migrations/knockout_phase.sql` en Supabase producción (`hhdrvkilwtuqftabulov`)
+2. Verificar preview deployment de Vercel — tabs, leaderboard, Goleador
+3. Correr `python scripts/seed_knockout_matches.py` contra producción (one-time, inserta 32 partidos TBD)
+4. Confirmar que `FOOTBALL_DATA_API_KEY` está seteada en Vercel env vars
+
+**TypeScript errors pendientes (44):** en páginas fuera del scope de quinelas (`matches/[id]/page.tsx`, etc.) — nullable team types. No bloquean la app pero se deben resolver en una sesión separada.
 
 ## Problemas resueltos
 1. **RLS recursión infinita** en `pool_members` → fix con `auth_is_pool_member` SECURITY DEFINER
@@ -97,7 +123,7 @@ Configurados en `~/.claude/mcp.json`:
 - [ ] Probar flujo completo con 2 usuarios reales en producción
 - [ ] Traducciones ES para páginas de quinelas (actualmente hardcodeadas en español)
 - [ ] Fecha de cierre para picks especiales (goleador siempre visible actualmente)
-- [ ] Fase knockout — segunda ronda de quinelas (reset de picks, nueva etapa)
+- [ ] Fase knockout — PR abierto (#1), ver checklist arriba antes de mergear
 - [ ] Cambiar Stripe key a `sk_live_...` en producción
 
 ## Comandos útiles
@@ -124,4 +150,6 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 STRIPE_SECRET_KEY
 STRIPE_WEBHOOK_SECRET
 NEXT_PUBLIC_APP_URL
+FOOTBALL_DATA_API_KEY     # football-data.org — sync resultados, teams knockout, goleador
+CRON_SECRET               # opcional — protege /api/sync-results con Bearer token
 ```

@@ -40,6 +40,8 @@ export interface PoolLeaderboardEntry {
   pool_id: string
   user_id: string
   total_points: number
+  group_points: number
+  knockout_points: number
   exact_scores: number
   correct_results: number
   last_updated: string
@@ -60,4 +62,12 @@ export interface PoolWithMemberCount extends Pool {
   member_count: number
   user_rank?: number
   user_points?: number
+}
+
+export interface TournamentTopScorer {
+  id: number
+  player_name: string
+  team_name: string
+  goals: number
+  updated_at: string
 }

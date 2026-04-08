@@ -14,8 +14,10 @@ export interface Team {
 
 export interface Match {
   id: string
-  home_team_id: string
-  away_team_id: string
+  home_team_id: string | null   // null cuando el equipo aún no está definido (knockout TBD)
+  away_team_id: string | null   // null cuando el equipo aún no está definido
+  home_slot: string | null      // ej: "1A", "2B" — se muestra cuando home_team_id es null
+  away_slot: string | null      // ej: "3C"
   group_letter: string | null
   scheduled_at: string
   venue: string
@@ -89,8 +91,8 @@ export interface UserPick {
 
 // Joined types for UI convenience
 export interface MatchWithTeams extends Match {
-  home_team: Team
-  away_team: Team
+  home_team: Team | null   // null cuando TBD
+  away_team: Team | null   // null cuando TBD
 }
 
 export interface GroupStanding {

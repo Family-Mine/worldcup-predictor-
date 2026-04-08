@@ -5,7 +5,7 @@ import { PoolLeaderboard } from '@/components/pools/PoolLeaderboard'
 import { InviteCodeBanner } from '@/components/pools/InviteCodeBanner'
 import { inviteUrl } from '@/lib/pools'
 import Link from 'next/link'
-import type { LeaderboardEntryWithProfile } from '@/types/pools'
+import type { LeaderboardEntryWithProfile, TournamentTopScorer } from '@/types/pools'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -47,10 +47,20 @@ export default async function PoolPage({
     redirect(`/${locale}/pools/join?code=${pool.invite_code}`)
   }
 
-  // Load leaderboard + profiles in parallel
-  const [{ data: leaderboardRows }, { data: memberRows }] = await Promise.all([
+  // Load leaderboard + profiles + special picks + top scorer in parallel
+  const [
+    { data: leaderboardRows },
+    { data: memberRows },
+    { data: specialPickRows },
+    { data: topScorerRows },
+  ] = await Promise.all([
     supabase.from('pool_leaderboard').select('*').eq('pool_id', poolId),
     supabase.from('pool_members').select('user_id').eq('pool_id', poolId),
+    supabase
+      .from('pool_special_picks')
+      .select('user_id, top_scorer_tournament')
+      .eq('pool_id', poolId),
+    supabase.from('tournament_top_scorer').select('*').limit(1),
   ])
 
   const memberIds = (memberRows ?? []).map(m => m.user_id)
@@ -61,19 +71,26 @@ export default async function PoolPage({
 
   const profileMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p]))
 
-  // Members with no leaderboard row yet (haven't submitted picks)
   const allEntries: LeaderboardEntryWithProfile[] = memberIds.map(uid => {
     const lb = (leaderboardRows ?? []).find(r => r.user_id === uid)
     return {
       pool_id: poolId,
       user_id: uid,
-      total_points: lb?.total_points ?? 0,
-      exact_scores: lb?.exact_scores ?? 0,
+      total_points:    lb?.total_points    ?? 0,
+      group_points:    lb?.group_points    ?? 0,
+      knockout_points: lb?.knockout_points ?? 0,
+      exact_scores:    lb?.exact_scores    ?? 0,
       correct_results: lb?.correct_results ?? 0,
-      last_updated: lb?.last_updated ?? new Date().toISOString(),
+      last_updated:    lb?.last_updated    ?? new Date().toISOString(),
       profile: profileMap[uid] ?? { id: uid, display_name: uid.slice(0, 8), avatar_url: null },
     }
   })
+
+  const topScorer: TournamentTopScorer | null = topScorerRows?.[0] ?? null
+  const specialPicks = (specialPickRows ?? []).map(p => ({
+    user_id: p.user_id,
+    top_scorer_tournament: p.top_scorer_tournament,
+  }))
 
   const isOwner = pool.created_by === user.id
   const url = inviteUrl(pool.invite_code, locale)
@@ -117,7 +134,12 @@ export default async function PoolPage({
       {/* Leaderboard */}
       <div>
         <h2 className="text-lg font-bold text-white mb-4">Tabla de posiciones</h2>
-        <PoolLeaderboard entries={allEntries} currentUserId={user.id} />
+        <PoolLeaderboard
+          entries={allEntries}
+          currentUserId={user.id}
+          specialPicks={specialPicks}
+          topScorer={topScorer}
+        />
       </div>
 
       {/* Scoring rules */}
