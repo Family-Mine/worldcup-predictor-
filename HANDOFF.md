@@ -86,14 +86,22 @@ Schema de quinelas: `supabase/pools_schema.sql`
 | `scripts/seed_knockout_matches.py` | Seed one-time de 32 partidos knockout con slots TBD (requiere SUPABASE_SERVICE_ROLE_KEY) |
 | `scripts/sync_data_v2.py` | Scraping Wikipedia para stats de equipos (45/48 teams — USA/MX/CA son hosts) |
 
-## Fase knockout — Estado del PR
-**PR:** Family-Mine/worldcup-predictor-#1 — `feat/knockout-phase` → `main`
+## Fase knockout — ✅ EN PRODUCCIÓN (2026-04-07)
+PR #1 mergeado a `main`. Todo aplicado:
+- Migración SQL aplicada en Supabase producción
+- 32 partidos knockout seedeados con slots TBD
+- `calculate_pool_points` actualizada con separación por fase
+- Cron `sync-results` extendido (syncKnockoutTeams → syncResults + syncTopScorer)
 
-**Antes de mergear (checklist):**
-1. Aplicar `supabase/migrations/knockout_phase.sql` en Supabase producción (`hhdrvkilwtuqftabulov`)
-2. Verificar preview deployment de Vercel — tabs, leaderboard, Goleador
-3. Correr `python scripts/seed_knockout_matches.py` contra producción (one-time, inserta 32 partidos TBD)
-4. Confirmar que `FOOTBALL_DATA_API_KEY` está seteada en Vercel env vars
+## Rediseño visual — SIGUIENTE TAREA (2026-04-08)
+Spec aprobado: `docs/superpowers/specs/2026-04-08-visual-redesign-design.md`
+
+**Para retomar:** invocar `writing-plans` con ese spec. Cambios:
+1. Tipografía Inter → **Space Grotesk** (`tailwind.config.ts` + `layout.tsx` + `globals.css`)
+2. Logo ⚽ → **diana SVG dorada** (crear `src/components/layout/LogoMark.tsx`, actualizar `Navbar.tsx`)
+3. Botones CTA dorado → **verde FIFA `#16A34A`** (actualizar token `fifa-green` en tailwind, reemplazar clases en ~6 páginas)
+4. Línea dorada 2px arriba de todas las cards
+5. Fila "tú" en leaderboard: dorado → verde
 
 **TypeScript errors pendientes (44):** en páginas fuera del scope de quinelas (`matches/[id]/page.tsx`, etc.) — nullable team types. No bloquean la app pero se deben resolver en una sesión separada.
 
