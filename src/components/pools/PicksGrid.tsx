@@ -114,7 +114,18 @@ export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
 
   return (
     <div className="space-y-6">
-      {Object.entries(groups).sort(([a], [b]) => a.localeCompare(b)).map(([groupKey, gMatches]) => (
+      {Object.entries(groups).sort(([a], [b]) => {
+        // Knockout stage order: r32 → r16 → qf → sf → 3rd → final
+        const STAGE_ORDER: Record<string, number> = {
+          'Ronda de 32': 1, 'Octavos de Final': 2, 'Cuartos de Final': 3,
+          'Semifinales': 4, 'Tercer Lugar': 5, 'Final': 6,
+        }
+        const oa = STAGE_ORDER[a] ?? 0
+        const ob = STAGE_ORDER[b] ?? 0
+        if (oa && ob) return oa - ob   // both knockout stages
+        if (oa || ob) return oa ? 1 : -1  // one is knockout
+        return a.localeCompare(b)         // both group labels
+      }).map(([groupKey, gMatches]) => (
         <div key={groupKey} className="bg-surface-card border border-surface-border rounded-xl overflow-hidden">
           {/* Group/stage header */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-surface-border bg-white/[0.02]">

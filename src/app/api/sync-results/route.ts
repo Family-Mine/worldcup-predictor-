@@ -254,10 +254,10 @@ export async function GET(req: NextRequest) {
     const teamIdByName: Record<string, string> = {}
     for (const t of teams ?? []) teamIdByName[t.name] = t.id
 
-    // Run all 3 sync tasks in parallel
-    const [resultsOut, knockoutOut, scorerOut] = await Promise.all([
+    // Resolve knockout team IDs first, then sync results + scorer in parallel
+    const knockoutOut = await syncKnockoutTeams(supabase, fdMatches, teamIdByName)
+    const [resultsOut, scorerOut] = await Promise.all([
       syncResults(supabase, fdMatches, teamIdByName),
-      syncKnockoutTeams(supabase, fdMatches, teamIdByName),
       syncTopScorer(supabase, apiKey),
     ])
 

@@ -37,7 +37,7 @@ export async function createPool(_prev: unknown, formData: FormData) {
   // Init leaderboard entry
   const { error: lbError } = await supabase.from('pool_leaderboard').insert({
     pool_id: pool.id, user_id: user.id,
-    total_points: 0, exact_scores: 0, correct_results: 0,
+    total_points: 0, group_points: 0, knockout_points: 0, exact_scores: 0, correct_results: 0,
   })
   if (lbError) return { error: 'No se pudo inicializar el marcador.' }
 
@@ -71,7 +71,7 @@ export async function joinPool(_prev: unknown, formData: FormData) {
 
   // Init leaderboard entry if not exists
   await supabase.from('pool_leaderboard').upsert(
-    { pool_id: poolId, user_id: user.id, total_points: 0, exact_scores: 0, correct_results: 0 },
+    { pool_id: poolId, user_id: user.id, total_points: 0, group_points: 0, knockout_points: 0, exact_scores: 0, correct_results: 0 },
     { onConflict: 'pool_id,user_id', ignoreDuplicates: true }
   )
 

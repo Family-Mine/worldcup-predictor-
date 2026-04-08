@@ -154,8 +154,9 @@ export function PoolLeaderboard({
           <div className="divide-y divide-surface-border/50">
             {entries.map(entry => {
               const pick = specialPicks.find(p => p.user_id === entry.user_id)
-              const predicted = pick?.top_scorer_tournament?.trim().toLowerCase() ?? ''
-              const actual = topScorer.player_name.trim().toLowerCase()
+              const normalize = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
+              const predicted = normalize(pick?.top_scorer_tournament ?? '')
+              const actual = normalize(topScorer.player_name)
               const isCorrect = predicted !== '' && predicted === actual
               const isMe = entry.user_id === currentUserId
               return (
