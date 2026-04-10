@@ -23,8 +23,8 @@ export function MatchCard({ match }: MatchCardProps) {
         </span>
 
         <div className="flex items-center gap-2 flex-1 justify-end">
-          <span className="text-sm text-white font-medium text-right">{match.home_team.name}</span>
-          <TeamFlag countryCode={match.home_team.country_code} name={match.home_team.name} size="sm" />
+          <span className="text-sm text-white font-medium text-right">{match.home_team?.name ?? 'TBD'}</span>
+          <TeamFlag countryCode={match.home_team?.country_code ?? ''} name={match.home_team?.name ?? 'TBD'} size="sm" />
         </div>
 
         <div className="flex items-center gap-1 mx-2 min-w-[60px] justify-center">
@@ -38,8 +38,8 @@ export function MatchCard({ match }: MatchCardProps) {
         </div>
 
         <div className="flex items-center gap-2 flex-1">
-          <TeamFlag countryCode={match.away_team.country_code} name={match.away_team.name} size="sm" />
-          <span className="text-sm text-white font-medium">{match.away_team.name}</span>
+          <TeamFlag countryCode={match.away_team?.country_code ?? ''} name={match.away_team?.name ?? 'TBD'} size="sm" />
+          <span className="text-sm text-white font-medium">{match.away_team?.name ?? 'TBD'}</span>
         </div>
 
         <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${

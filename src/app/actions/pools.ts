@@ -97,7 +97,7 @@ export async function submitPick(
     .single()
 
   if (!match) return { error: 'Partido no encontrado.' }
-  if (isMatchLocked(match as any)) return { error: 'Las predicciones para este partido están cerradas.' }
+  if (isMatchLocked(match)) return { error: 'Las predicciones para este partido están cerradas.' }
 
   const { error } = await supabase.from('pool_picks').upsert(
     {

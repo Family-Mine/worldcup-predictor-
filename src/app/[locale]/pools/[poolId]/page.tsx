@@ -10,7 +10,7 @@ import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
 
-export async function generateMetadata({ params }: { params: { poolId: string } }): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
   return { title: 'Grupo · WC26 Predictor' }
 }
 
@@ -92,7 +92,6 @@ export default async function PoolPage({
     top_scorer_tournament: p.top_scorer_tournament,
   }))
 
-  const isOwner = pool.created_by === user.id
   const url = inviteUrl(pool.invite_code, locale)
 
   return (

@@ -13,15 +13,17 @@ import { BettingLinksBar } from '@/components/betting/BettingLinksBar'
 
 export const dynamic = 'force-dynamic'
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
   const supabase = getSupabaseServerClient()
   const { data: match } = await supabase
     .from('matches')
     .select('*, home_team:teams!matches_home_team_id_fkey(name), away_team:teams!matches_away_team_id_fkey(name)')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
   if (!match) return { title: 'Match' }
   const m = match as MatchWithTeams
+  if (!m.home_team || !m.away_team) return { title: 'Match' }
   return {
     title: `${m.home_team.name} vs ${m.away_team.name}`,
     description: `AI prediction for ${m.home_team.name} vs ${m.away_team.name} — 2026 FIFA World Cup`,
@@ -57,26 +59,27 @@ function ConfidenceBadge({ level }: { level: 'high' | 'medium' | 'low' }) {
 export default async function MatchPage({
   params,
 }: {
-  params: { id: string; locale: string }
+  params: Promise<{ id: string; locale: string }>
 }) {
+  const { id, locale } = await params
   const supabase = getSupabaseServerClient()
-  const locale = params.locale
   const prefix = `/${locale}`
 
   const { data: match, error } = await supabase
     .from('matches')
     .select('*, home_team:teams!matches_home_team_id_fkey(*), away_team:teams!matches_away_team_id_fkey(*)')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !match) notFound()
 
   const m = match as MatchWithTeams
+  if (!m.home_team || !m.away_team) notFound()
 
   // Auth + subscription check
   const { data: { user } } = await supabase.auth.getUser()
   const isPaid = user ? await hasActiveSubscription(supabase, user.id) : false
-  const prediction = isPaid ? await getPrediction(params.id) : null
+  const prediction = isPaid ? await getPrediction(id) : null
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">

@@ -8,7 +8,7 @@ interface GroupBundleGateProps {
   hasBaseSub: boolean
 }
 
-export function GroupBundleGate({ isLoggedIn, hasBaseSub }: GroupBundleGateProps) {
+export function GroupBundleGate({ isLoggedIn }: GroupBundleGateProps) {
   const params = useParams()
   const locale = (params.locale as string) || 'en'
   const [loading, setLoading] = useState(false)

@@ -38,14 +38,10 @@ function ProbRow({
   homeProb,
   drawProb,
   awayProb,
-  homeName,
-  awayName,
 }: {
   homeProb: number
   drawProb: number
   awayProb: number
-  homeName: string
-  awayName: string
 }) {
   const home = Math.round(homeProb * 100)
   const draw = Math.round(drawProb * 100)
@@ -106,12 +102,12 @@ function MatchRow({
       {/* Home team */}
       <div className="flex items-center gap-2 flex-1 justify-end">
         <span className={`text-sm font-semibold hidden sm:block ${homeWins ? 'text-white' : 'text-slate-400'}`}>
-          {match.home_team.name}
+          {match.home_team?.name ?? 'TBD'}
         </span>
         <span className={`text-sm font-semibold sm:hidden ${homeWins ? 'text-white' : 'text-slate-400'}`}>
-          {match.home_team.country_code}
+          {match.home_team?.country_code ?? ''}
         </span>
-        <TeamFlag countryCode={match.home_team.country_code} name={match.home_team.name} size="sm" />
+        <TeamFlag countryCode={match.home_team?.country_code ?? ''} name={match.home_team?.name ?? 'TBD'} size="sm" />
       </div>
 
       {/* Score / probs */}
@@ -131,8 +127,6 @@ function MatchRow({
               homeProb={prediction.home_win_prob}
               drawProb={prediction.draw_prob}
               awayProb={prediction.away_win_prob}
-              homeName={match.home_team.name}
-              awayName={match.away_team.name}
             />
             <ConfidenceDot level={prediction.confidence_level} />
           </>
@@ -143,12 +137,12 @@ function MatchRow({
 
       {/* Away team */}
       <div className="flex items-center gap-2 flex-1">
-        <TeamFlag countryCode={match.away_team.country_code} name={match.away_team.name} size="sm" />
+        <TeamFlag countryCode={match.away_team?.country_code ?? ''} name={match.away_team?.name ?? 'TBD'} size="sm" />
         <span className={`text-sm font-semibold hidden sm:block ${awayWins ? 'text-white' : 'text-slate-400'}`}>
-          {match.away_team.name}
+          {match.away_team?.name ?? 'TBD'}
         </span>
         <span className={`text-sm font-semibold sm:hidden ${awayWins ? 'text-white' : 'text-slate-400'}`}>
-          {match.away_team.country_code}
+          {match.away_team?.country_code ?? ''}
         </span>
       </div>
     </Link>
@@ -198,14 +192,15 @@ export default async function GroupPhasePage({
   params,
   searchParams,
 }: {
-  params: { locale: string }
-  searchParams: { preview?: string }
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ preview?: string }>
 }) {
+  const { locale } = await params
+  const resolvedSearch = await searchParams
   const supabase = getSupabaseServerClient()
-  const locale = params.locale
 
   // Dev-only preview bypass
-  const isPreview = process.env.NODE_ENV === 'development' && searchParams.preview === '1'
+  const isPreview = process.env.NODE_ENV === 'development' && resolvedSearch.preview === '1'
 
   const { data: { user } } = await supabase.auth.getUser()
 

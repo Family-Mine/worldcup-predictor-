@@ -2,7 +2,7 @@
 import type { Match } from '@/types/database'
 
 /** Returns true if predictions for this match are locked (kick-off within 5 min or past) */
-export function isMatchLocked(match: Match): boolean {
+export function isMatchLocked(match: Pick<Match, 'scheduled_at'>): boolean {
   const kickoff = new Date(match.scheduled_at).getTime()
   const fiveMinBefore = kickoff - 5 * 60 * 1000
   return Date.now() >= fiveMinBefore

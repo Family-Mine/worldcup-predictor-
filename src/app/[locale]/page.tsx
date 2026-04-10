@@ -1,5 +1,5 @@
 // src/app/[locale]/page.tsx
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { setRequestLocale } from 'next-intl/server'
 import Link from 'next/link'
 import { CountdownTimer } from '@/components/ui/CountdownTimer'
