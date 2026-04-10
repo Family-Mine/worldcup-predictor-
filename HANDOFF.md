@@ -30,8 +30,8 @@ Tablas de quinelas: `profiles`, `pools`, `pool_members`, `pool_picks`, `pool_spe
 
 **Nueva (knockout phase):** `tournament_top_scorer` — singleton (id=1, CHECK), se upsertea en cada cron con el goleador actual
 
-Schema de quinelas: `supabase/pools_schema.sql`  
-**Migración knockout:** `supabase/migrations/knockout_phase.sql` — ⚠️ pendiente de aplicar en producción
+Schema de quinelas: `supabase/pools_schema.sql`
+Migración knockout: `supabase/migrations/knockout_phase.sql` — ✅ aplicada en producción
 
 ### RLS — Puntos críticos
 - `pool_members_select` usa `auth_is_pool_member(pool_id)` (SECURITY DEFINER) para evitar recursión infinita
@@ -42,7 +42,7 @@ Schema de quinelas: `supabase/pools_schema.sql`
 ### Funciones en Supabase (aplicadas manualmente, no en el schema SQL)
 - `auth_is_pool_member(p_pool_id uuid)` — verifica membresía sin recursión RLS
 - `get_pool_id_by_invite_code(p_code text)` — lookup de pool para join flow
-- `calculate_pool_points(p_match_id, p_actual_home, p_actual_away)` — calcula puntos tras resultado real; v2 (knockout_phase.sql) separa en `group_points` / `knockout_points` según `stage` del partido
+- `calculate_pool_points(p_match_id, p_actual_home, p_actual_away)` — calcula puntos; v2 separa en `group_points` / `knockout_points` según `stage`
 
 ## Sistema de suscripciones (Stripe)
 - **Base** (`subscription`): $4.99 → acceso a predicciones individuales
@@ -51,61 +51,89 @@ Schema de quinelas: `supabase/pools_schema.sql`
 - Webhook: `src/app/api/stripe/webhook/route.ts`
 - Checkout: `src/app/api/stripe/checkout/route.ts`
 - **Stripe CLI instalado** para testing local de webhooks
+- ⚠️ Actualmente usando `sk_test_...` — pendiente cambiar a `sk_live_...` en producción
 
 ## Módulo de quinelas — Lógica de puntos
 - Marcador exacto = 3 pts
 - Ganador correcto (sin marcador exacto) = 1 pt
 - Incorrecto = 0 pts
-- Misma lógica en fase de grupos y fase knockout
-- 3 premios separados: **Fase Grupos** (`group_points`) · **Fase Knockout** (`knockout_points`) · **Goleador** (comparación de nombre normalizado contra `tournament_top_scorer`)
+- 3 premios separados: **Fase Grupos** (`group_points`) · **Fase Knockout** (`knockout_points`) · **Goleador**
 - Picks se cierran 5 min antes del partido (`isMatchLocked` en `src/lib/pools.ts`)
-- Score inputs: `type="text" inputMode="numeric"` (no `type="number"` — evita flechas que descentran texto)
+- Score inputs: `type="text" inputMode="numeric"`
 - Auto-save en `onBlur` — solo guarda si AMBOS campos tienen valor
-- `joinPool` usa RPC `get_pool_id_by_invite_code` para bypasear RLS
-- Locale se pasa como hidden form field en createPool y joinPool
 
 ### Fase knockout — TBD teams
 - `matches.home_team_id` / `away_team_id` son nullable; slots `home_slot`/`away_slot` muestran "1A", "W49", etc.
 - PicksGrid bloquea inputs cuando `home_team_id IS NULL`
 - Cron `sync-results` rellena team IDs cuando football-data.org los confirma (matching por kickoff ±5 min)
-- Tab Knockout en picks page muestra banner hasta que haya al menos un equipo confirmado
 
 ## Archivos clave
 | Archivo | Qué hace |
 |---------|----------|
 | `src/app/actions/pools.ts` | Server actions: createPool, joinPool, submitPick, submitSpecialPick |
 | `src/lib/pools.ts` | isMatchLocked, computePoints, inviteUrl |
-| `src/types/pools.ts` | Tipos del módulo quinelas — incl. `TournamentTopScorer`, `PoolLeaderboardEntry` con `group_points`/`knockout_points` |
-| `src/types/database.ts` | Tipos DB — `Match` con `home_team_id: string \| null`, `home_slot`, `away_slot`; `MatchWithTeams` con teams nullable |
-| `src/components/pools/PicksGrid.tsx` | Grid de predicciones — maneja TBD teams con slot labels, stages knockout con orden correcto |
-| `src/components/pools/PoolLeaderboard.tsx` | Tabla de posiciones — tabs General/Grupos/Knockout + sección Goleador fija |
-| `src/components/pools/InviteCodeBanner.tsx` | Banner con código + botones copiar independientes |
-| `src/components/pools/SpecialPicksForm.tsx` | Formulario goleador |
-| `src/app/api/sync-results/route.ts` | Cron diario: sync resultados + knockout teams + goleador (en ese orden) |
-| `supabase/migrations/knockout_phase.sql` | Migración completa de fase knockout (⚠️ aplicar en producción) |
-| `scripts/seed_knockout_matches.py` | Seed one-time de 32 partidos knockout con slots TBD (requiere SUPABASE_SERVICE_ROLE_KEY) |
-| `scripts/sync_data_v2.py` | Scraping Wikipedia para stats de equipos (45/48 teams — USA/MX/CA son hosts) |
+| `src/types/pools.ts` | Tipos del módulo quinelas — incl. `TournamentTopScorer`, `PoolLeaderboardEntry` |
+| `src/types/database.ts` | Tipos DB — `Match` con `home_team_id: string \| null`, `home_slot`, `away_slot` |
+| `src/components/pools/PicksGrid.tsx` | Grid de predicciones — maneja TBD teams con slot labels |
+| `src/components/pools/PoolLeaderboard.tsx` | Tabla de posiciones — tabs General/Grupos/Knockout + sección Goleador |
+| `src/components/layout/LogoMark.tsx` | Logo SVG diana dorada + wordmark (nuevo — rediseño 2026-04-08) |
+| `src/app/api/sync-results/route.ts` | Cron diario: sync resultados + knockout teams + goleador |
+| `supabase/migrations/knockout_phase.sql` | Migración completa de fase knockout (✅ en producción) |
 
-## Fase knockout — ✅ EN PRODUCCIÓN (2026-04-07)
-PR #1 mergeado a `main`. Todo aplicado:
-- Migración SQL aplicada en Supabase producción
-- 32 partidos knockout seedeados con slots TBD
-- `calculate_pool_points` actualizada con separación por fase
-- Cron `sync-results` extendido (syncKnockoutTeams → syncResults + syncTopScorer)
+---
 
-## Rediseño visual — SIGUIENTE TAREA (2026-04-08)
-Spec aprobado: `docs/superpowers/specs/2026-04-08-visual-redesign-design.md`
+## ✅ Completado — Rediseño visual (2026-04-08/10)
 
-**Para retomar:** invocar `writing-plans` con ese spec. Cambios:
-1. Tipografía Inter → **Space Grotesk** (`tailwind.config.ts` + `layout.tsx` + `globals.css`)
-2. Logo ⚽ → **diana SVG dorada** (crear `src/components/layout/LogoMark.tsx`, actualizar `Navbar.tsx`)
-3. Botones CTA dorado → **verde FIFA `#16A34A`** (actualizar token `fifa-green` en tailwind, reemplazar clases en ~6 páginas)
-4. Línea dorada 2px arriba de todas las cards
-5. Fila "tú" en leaderboard: dorado → verde
+Todos los cambios mergeados a `main` pero **pendientes de commit y deploy**:
 
-**TypeScript errors pendientes (44):** en páginas fuera del scope de quinelas (`matches/[id]/page.tsx`, etc.) — nullable team types. No bloquean la app pero se deben resolver en una sesión separada.
+### Cambios implementados
+1. **Tipografía** — Inter → Space Grotesk (`tailwind.config.ts` + `layout.tsx` + `globals.css`)
+2. **Token fifa-green** — `#006847` → `#16A34A` (verde FIFA más vivo)
+3. **Logo** — emoji ⚽ → diana SVG dorada (`LogoMark.tsx`); actualizado en Navbar, login, register
+4. **Botones CTA** — dorado → verde FIFA en 13 archivos (Navbar, home, pools, login, register, join, new, picks, special, PaywallCTA, PaywallGate, GroupBundleGate, SpecialPicksForm)
+5. **Leaderboard fila "tú"** — highlight dorado → verde (5 ocurrencias en PoolLeaderboard + special/page)
+6. **Fixes Next.js 16** — `await params` y `await cookies()` en pools/page, poolId/page, special/page, layout
 
-## Problemas resueltos
+### Pendiente del rediseño
+- Línea dorada 2px arriba de cards en home hero y páginas de grupos/partidos (spec sección 4)
+  - Home hero → fácil, 1 div wrapper
+  - Groups/matches pages → esperar a limpiar los 44 errores TS primero
+
+---
+
+## Próximos pasos (en orden)
+
+### 1. Commit + deploy del rediseño (inmediato)
+```bash
+git add -p   # revisar cambios
+git commit -m "feat: visual redesign — Space Grotesk, green CTA buttons, SVG logo, leaderboard green highlight"
+git push
+# Vercel despliega automáticamente desde main
+```
+
+### 2. Stripe en producción
+- Cambiar `STRIPE_SECRET_KEY` de `sk_test_...` a `sk_live_...` en Vercel env vars
+- Configurar webhook en Stripe Dashboard: `https://worldcup-predictor-lovat.vercel.app/api/stripe/webhook`
+- Actualizar `STRIPE_WEBHOOK_SECRET` con el signing secret del webhook live
+- Probar flujo completo con tarjeta real
+
+### 3. Línea dorada en cards (diseño)
+- Home hero: agregar `<div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-fifa-gold to-yellow-700" />` al panel principal
+- Groups/matches: resolver 44 errores TS primero
+
+### 4. Cleanup TypeScript (44 errores preexistentes)
+- Principalmente en `matches/[id]/page.tsx` y páginas relacionadas
+- Causa: `home_team_id` / `away_team_id` nullable después de migración knockout
+- No bloquean la app pero sí bloquean `npm run build` limpio
+
+### 5. App mobile WC26
+- 10 prompts de arquitectura guardados en `~/.claude/projects/.../memory/wc26_mobile_prompts.md`
+- Stack confirmado: React Native + Expo
+- Ejecutar prompts en orden: 10 → 1 → 4 → 8 → 2 → 5 → 3 → 6 → 7 → 9
+
+---
+
+## Problemas resueltos (histórico)
 1. **RLS recursión infinita** en `pool_members` → fix con `auth_is_pool_member` SECURITY DEFINER
 2. **joinPool fallaba** para usuarios no-miembros → fix con `get_pool_id_by_invite_code` RPC
 3. **pool_leaderboard sin INSERT/UPDATE policy** → filas nunca se creaban al unirse
@@ -126,14 +154,6 @@ Configurados en `~/.claude/mcp.json`:
 - **GitHub** — token en mcp.json (PAT: `claude-code-mcp`)
 - **Stripe** — sk_test en mcp.json (cambiar a sk_live en producción)
 
-## Pendientes
-- [ ] Configurar Stripe webhook en producción (URL: `https://worldcup-predictor-lovat.vercel.app/api/stripe/webhook`)
-- [ ] Probar flujo completo con 2 usuarios reales en producción
-- [ ] Traducciones ES para páginas de quinelas (actualmente hardcodeadas en español)
-- [ ] Fecha de cierre para picks especiales (goleador siempre visible actualmente)
-- [ ] Fase knockout — PR abierto (#1), ver checklist arriba antes de mergear
-- [ ] Cambiar Stripe key a `sk_live_...` en producción
-
 ## Comandos útiles
 ```bash
 # Dev server
@@ -141,9 +161,6 @@ npm run dev
 
 # Si el servidor no responde en puerto 3000
 lsof -ti:3000 | xargs kill -9 && rm -rf .next && npm run dev
-
-# Sync de datos de equipos desde Wikipedia
-python3 scripts/sync_data_v2.py
 
 # Stripe webhook local
 stripe listen --forward-to localhost:3000/api/stripe/webhook
@@ -155,9 +172,9 @@ NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-STRIPE_SECRET_KEY
-STRIPE_WEBHOOK_SECRET
+STRIPE_SECRET_KEY                  ⚠️ cambiar a sk_live_...
+STRIPE_WEBHOOK_SECRET              ⚠️ actualizar con signing secret live
 NEXT_PUBLIC_APP_URL
-FOOTBALL_DATA_API_KEY     # football-data.org — sync resultados, teams knockout, goleador
-CRON_SECRET               # opcional — protege /api/sync-results con Bearer token
+FOOTBALL_DATA_API_KEY
+CRON_SECRET
 ```

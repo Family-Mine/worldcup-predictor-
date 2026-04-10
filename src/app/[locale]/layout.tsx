@@ -2,12 +2,12 @@
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
-import { Inter } from 'next/font/google'
+import { Space_Grotesk } from 'next/font/google'
 import '../globals.css'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 
-const inter = Inter({ subsets: ['latin'] })
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '600', '700'] })
 
 export const metadata: Metadata = {
   title: {
@@ -35,7 +35,7 @@ export default async function LocaleLayout({
   // Get current user for navbar
   const { createServerClient } = await import('@supabase/ssr')
   const { cookies } = await import('next/headers')
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -45,7 +45,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className="dark">
-      <body className={`${inter.className} bg-surface text-slate-100 min-h-screen`}>
+      <body className={`${spaceGrotesk.className} bg-surface text-slate-100 min-h-screen`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Navbar user={user} />
           <main>{children}</main>

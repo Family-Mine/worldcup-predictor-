@@ -64,7 +64,7 @@ export function SpecialPicksForm({ poolId, existing }: SpecialPicksFormProps) {
       <button
         onClick={handleSave}
         disabled={isPending}
-        className="w-full bg-fifa-gold text-black font-bold py-2.5 rounded-xl hover:bg-yellow-400 transition-colors disabled:opacity-60"
+        className="w-full bg-fifa-green text-white font-bold py-2.5 rounded-xl hover:bg-green-500 transition-colors disabled:opacity-60"
       >
         {isPending ? 'Guardando…' : saved ? '✓ Guardado' : 'Guardar predicciones especiales'}
       </button>

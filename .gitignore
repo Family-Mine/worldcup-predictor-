@@ -35,3 +35,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .superpowers/
+CLAUDE.local.md
+HANDOFF.md
+.claude/settings.local.json
+.env

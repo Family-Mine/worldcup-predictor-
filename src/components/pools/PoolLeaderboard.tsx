@@ -90,7 +90,7 @@ export function PoolLeaderboard({
                 return (
                   <tr
                     key={entry.user_id}
-                    className={`transition-colors ${isMe ? 'bg-fifa-gold/5 border-l-2 border-l-fifa-gold' : 'hover:bg-white/[0.02]'}`}
+                    className={`transition-colors ${isMe ? 'bg-fifa-green/5 border-l-2 border-l-fifa-green' : 'hover:bg-white/[0.02]'}`}
                   >
                     <td className="px-4 py-3 text-center">
                       {i < 3
@@ -103,14 +103,14 @@ export function PoolLeaderboard({
                         <div className="w-7 h-7 rounded-full bg-surface-border flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
                           {entry.profile.display_name.charAt(0).toUpperCase()}
                         </div>
-                        <span className={`font-medium ${isMe ? 'text-fifa-gold' : 'text-slate-200'}`}>
+                        <span className={`font-medium ${isMe ? 'text-fifa-green' : 'text-slate-200'}`}>
                           {entry.profile.display_name}
                           {isMe && <span className="text-xs text-slate-500 ml-1">(tú)</span>}
                         </span>
                       </div>
                     </td>
                     <td className="px-3 py-3 text-center">
-                      <span className={`text-lg font-black ${isMe ? 'text-fifa-gold' : 'text-white'}`}>
+                      <span className={`text-lg font-black ${isMe ? 'text-fifa-green' : 'text-white'}`}>
                         {entry[key] as number}
                       </span>
                     </td>
@@ -162,12 +162,12 @@ export function PoolLeaderboard({
               return (
                 <div
                   key={entry.user_id}
-                  className={`px-4 py-3 flex items-center gap-3 ${isMe ? 'bg-fifa-gold/5' : ''}`}
+                  className={`px-4 py-3 flex items-center gap-3 ${isMe ? 'bg-fifa-green/5' : ''}`}
                 >
                   <div className="w-7 h-7 rounded-full bg-surface-border flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
                     {entry.profile.display_name.charAt(0).toUpperCase()}
                   </div>
-                  <span className={`flex-1 text-sm font-medium ${isMe ? 'text-fifa-gold' : 'text-slate-200'}`}>
+                  <span className={`flex-1 text-sm font-medium ${isMe ? 'text-fifa-green' : 'text-slate-200'}`}>
                     {entry.profile.display_name}
                   </span>
                   <span className="text-xs text-slate-500 mr-2">

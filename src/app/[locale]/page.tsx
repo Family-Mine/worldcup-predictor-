@@ -36,7 +36,7 @@ export default function LandingPage({ params: { locale } }: { params: { locale: 
           >
             {t('cta_explore')}
           </Link>
-          <button className="px-8 py-4 bg-fifa-gold text-black rounded-xl font-bold hover:bg-yellow-400 transition-colors">
+          <button className="px-8 py-4 bg-fifa-green text-white rounded-xl font-bold hover:bg-green-500 transition-colors">
             {t('cta_unlock')}
           </button>
         </div>

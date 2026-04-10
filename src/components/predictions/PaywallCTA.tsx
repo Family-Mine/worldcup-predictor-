@@ -13,7 +13,7 @@ export function PaywallCTA() {
       <p className="text-slate-400 mb-6 max-w-md mx-auto">{t('description')}</p>
       <div className="flex items-center justify-center gap-4 flex-wrap">
         <span className="text-3xl font-black text-fifa-gold">{t('price')}</span>
-        <button className="px-8 py-3 bg-fifa-gold text-black rounded-xl font-bold hover:bg-yellow-400 transition-colors text-lg">
+        <button className="px-8 py-3 bg-fifa-green text-white rounded-xl font-bold hover:bg-green-500 transition-colors text-lg">
           {t('cta')}
         </button>
       </div>

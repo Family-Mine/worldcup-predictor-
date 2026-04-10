@@ -50,7 +50,7 @@ export function GroupBundleGate({ isLoggedIn, hasBaseSub }: GroupBundleGateProps
         <p className="text-slate-400 text-sm mb-6">Create a free account and unlock all 2026 World Cup predictions.</p>
         <a
           href={`/${locale}/login`}
-          className="inline-block px-8 py-3 bg-fifa-gold text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors"
+          className="inline-block px-8 py-3 bg-fifa-green text-white font-bold rounded-xl hover:bg-green-500 transition-colors"
         >
           Sign in
         </a>
@@ -99,7 +99,7 @@ export function GroupBundleGate({ isLoggedIn, hasBaseSub }: GroupBundleGateProps
       <button
         onClick={handlePurchase}
         disabled={loading}
-        className="w-full max-w-xs bg-fifa-gold text-black font-bold py-3 rounded-xl hover:bg-yellow-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full max-w-xs bg-fifa-green text-white font-bold py-3 rounded-xl hover:bg-green-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {loading ? 'Redirecting to checkout…' : 'Unlock Group Bundle — $9.99'}
       </button>

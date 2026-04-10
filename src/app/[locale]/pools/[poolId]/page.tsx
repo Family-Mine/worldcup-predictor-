@@ -17,11 +17,11 @@ export async function generateMetadata({ params }: { params: { poolId: string } 
 export default async function PoolPage({
   params,
 }: {
-  params: { locale: string; poolId: string }
+  params: Promise<{ locale: string; poolId: string }>
 }) {
+  const { locale, poolId } = await params
   const supabase = getSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const { locale, poolId } = params
 
   if (!user) redirect(`/${locale}/login`)
 
@@ -112,7 +112,7 @@ export default async function PoolPage({
           <div className="flex gap-2 flex-shrink-0">
             <Link
               href={`/${locale}/pools/${poolId}/picks`}
-              className="px-4 py-2 bg-fifa-gold text-black font-bold text-sm rounded-xl hover:bg-yellow-400 transition-colors"
+              className="px-4 py-2 bg-fifa-green text-white font-bold text-sm rounded-xl hover:bg-green-500 transition-colors"
             >
               Mis predicciones
             </Link>

@@ -49,7 +49,7 @@ export function PaywallGate({ isLoggedIn }: PaywallGateProps) {
       <button
         onClick={handleUnlock}
         disabled={loading}
-        className="w-full max-w-xs bg-fifa-gold text-black font-bold py-3 rounded-xl hover:bg-yellow-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full max-w-xs bg-fifa-green text-white font-bold py-3 rounded-xl hover:bg-green-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {loading ? 'Redirecting…' : isLoggedIn ? 'Unlock Now — $4.99' : 'Sign in to Unlock'}
       </button>

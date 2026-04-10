@@ -7,10 +7,10 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = { title: 'Mis Grupos — WC26 Predictor' }
 export const dynamic = 'force-dynamic'
 
-export default async function PoolsPage({ params }: { params: { locale: string } }) {
+export default async function PoolsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
   const supabase = getSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const locale = params.locale
 
   if (!user) redirect(`/${locale}/login`)
 
@@ -50,7 +50,7 @@ export default async function PoolsPage({ params }: { params: { locale: string }
           </Link>
           <Link
             href={`/${locale}/pools/new`}
-            className="px-4 py-2 text-sm bg-fifa-gold text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors"
+            className="px-4 py-2 text-sm bg-fifa-green text-white font-bold rounded-xl hover:bg-green-500 transition-colors"
           >
             + Nuevo grupo
           </Link>
@@ -73,7 +73,7 @@ export default async function PoolsPage({ params }: { params: { locale: string }
             </Link>
             <Link
               href={`/${locale}/pools/new`}
-              className="px-5 py-2.5 bg-fifa-gold text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors text-sm"
+              className="px-5 py-2.5 bg-fifa-green text-white font-bold rounded-xl hover:bg-green-500 transition-colors text-sm"
             >
               Crear grupo
             </Link>

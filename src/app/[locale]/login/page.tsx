@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'
+import { LogoMark } from '@/components/layout/LogoMark'
 
 export default function LoginPage() {
   const params = useParams()
@@ -41,9 +42,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link href={prefix} className="inline-flex items-center gap-2 mb-6">
-            <span className="text-3xl">⚽</span>
-            <span className="font-bold text-white text-xl">WC26 <span className="text-fifa-gold">Predictor</span></span>
+          <Link href={prefix} className="inline-flex mb-6">
+            <LogoMark />
           </Link>
           <h1 className="text-2xl font-bold text-white">Sign in</h1>
           <p className="text-slate-400 text-sm mt-1">Welcome back</p>
@@ -85,7 +85,7 @@ export default function LoginPage() {
             type="button"
             onClick={handleSignIn}
             disabled={loading || !email || !password}
-            className="w-full bg-fifa-gold text-black font-bold py-2.5 rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full bg-fifa-green text-white font-bold py-2.5 rounded-lg hover:bg-green-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? 'Signing in…' : 'Sign in'}
           </button>

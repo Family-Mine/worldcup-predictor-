@@ -11,11 +11,11 @@ export const dynamic = 'force-dynamic'
 export default async function SpecialPage({
   params,
 }: {
-  params: { locale: string; poolId: string }
+  params: Promise<{ locale: string; poolId: string }>
 }) {
+  const { locale, poolId } = await params
   const supabase = getSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const { locale, poolId } = params
 
   if (!user) redirect(`/${locale}/login`)
 
@@ -70,9 +70,9 @@ export default async function SpecialPage({
               return (
                 <div
                   key={sp.user_id}
-                  className={`bg-surface-card border rounded-xl p-4 text-sm ${isMe ? 'border-fifa-gold/30' : 'border-surface-border'}`}
+                  className={`bg-surface-card border rounded-xl p-4 text-sm ${isMe ? 'border-fifa-green/30' : 'border-surface-border'}`}
                 >
-                  <p className={`font-semibold mb-2 ${isMe ? 'text-fifa-gold' : 'text-slate-300'}`}>
+                  <p className={`font-semibold mb-2 ${isMe ? 'text-fifa-green' : 'text-slate-300'}`}>
                     {profile?.display_name ?? sp.user_id.slice(0, 8)}
                     {isMe && ' (tú)'}
                   </p>
