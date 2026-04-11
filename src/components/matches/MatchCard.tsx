@@ -17,7 +17,7 @@ export function MatchCard({ match }: MatchCardProps) {
 
   return (
     <Link href={`${prefix}/matches/${match.id}`}>
-      <div className="bg-surface-card border border-surface-border rounded-xl px-4 py-3 hover:border-slate-500 transition-colors flex items-center gap-4">
+      <div className="bg-surface-card border border-surface-border border-t-2 border-t-fifa-gold rounded-xl px-4 py-3 hover:border-slate-500 transition-colors flex items-center gap-4">
         <span className="text-xs text-slate-500 w-16 flex-shrink-0">
           {formatMatchDateShort(match.scheduled_at)}
         </span>

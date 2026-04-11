@@ -2,7 +2,12 @@
   "nav": {
     "home": "Home",
     "groups": "Groups",
-    "predictions": "Predictions"
+    "predictions": "Predictions",
+    "pools": "Pools",
+    "groupBundle": "Group Bundle",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "register": "Register"
   },
   "landing": {
     "hero_title": "Predict Every Match.",

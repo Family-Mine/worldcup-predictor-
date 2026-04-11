@@ -21,6 +21,7 @@ export default function LandingPage({ params: { locale } }: { params: { locale: 
           2026 FIFA World Cup · USA / Canada / Mexico
         </div>
 
+        <div className="w-12 h-0.5 bg-fifa-gold mx-auto mb-6" />
         <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
           {t('hero_title')}
         </h1>

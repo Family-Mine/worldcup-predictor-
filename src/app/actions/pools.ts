@@ -117,11 +117,16 @@ export async function submitPick(
 
 // ── Submit special pick ───────────────────────────────────────
 
+const SPECIAL_PICKS_DEADLINE = new Date('2026-06-11T18:00:00Z')
+
 export async function submitSpecialPick(
   poolId: string,
   topScorerTournament: string,
   topScorerGroupPhase: string
 ): Promise<{ error?: string }> {
+  if (Date.now() >= SPECIAL_PICKS_DEADLINE.getTime()) {
+    return { error: 'Las predicciones especiales están cerradas.' }
+  }
   const { supabase, user } = await getUser()
   if (!user) return { error: 'No autenticado.' }
 

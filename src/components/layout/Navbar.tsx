@@ -35,14 +35,14 @@ export function Navbar({ user }: NavbarProps) {
             className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-fifa-green hover:text-green-400 transition-colors"
           >
             <span className="text-xs">★</span>
-            Group Bundle
+            {t('groupBundle')}
           </Link>
 
           <Link
             href={`${prefix}/pools`}
             className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-slate-300 hover:text-white transition-colors"
           >
-            👥 Grupos
+            👥 {t('pools')}
           </Link>
 
           <LanguageToggle />
@@ -57,7 +57,7 @@ export function Navbar({ user }: NavbarProps) {
                   type="submit"
                   className="text-xs text-slate-400 hover:text-white border border-surface-border rounded-lg px-3 py-1.5 transition-colors"
                 >
-                  Sign out
+                  {t('signOut')}
                 </button>
               </form>
             </div>
@@ -67,13 +67,13 @@ export function Navbar({ user }: NavbarProps) {
                 href={`${prefix}/login`}
                 className="text-sm text-slate-300 hover:text-white transition-colors"
               >
-                Sign in
+                {t('signIn')}
               </Link>
               <Link
                 href={`${prefix}/register`}
                 className="text-sm bg-fifa-green text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-green-500 transition-colors"
               >
-                Register
+                {t('register')}
               </Link>
             </div>
           )}

@@ -16,7 +16,7 @@ export function GroupCard({ letter, teams }: GroupCardProps) {
 
   return (
     <Link href={`${prefix}/groups/${letter}`}>
-      <div className="bg-surface-card border border-surface-border rounded-xl p-4 hover:border-fifa-gold transition-colors cursor-pointer group h-full">
+      <div className="bg-surface-card border border-surface-border border-t-2 border-t-fifa-gold rounded-xl p-4 hover:border-fifa-gold transition-colors cursor-pointer group h-full">
         <div className="flex items-center justify-between mb-3">
           <span className="text-lg font-black text-white group-hover:text-fifa-gold transition-colors">
             Group {letter}

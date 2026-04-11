@@ -2,7 +2,12 @@
   "nav": {
     "home": "Inicio",
     "groups": "Grupos",
-    "predictions": "Predicciones"
+    "predictions": "Predicciones",
+    "pools": "Quinelas",
+    "groupBundle": "Paquete Grupos",
+    "signIn": "Ingresar",
+    "signOut": "Salir",
+    "register": "Registrarse"
   },
   "landing": {
     "hero_title": "Predice Cada Partido.",
