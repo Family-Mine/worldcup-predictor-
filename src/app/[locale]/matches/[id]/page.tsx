@@ -1,5 +1,5 @@
 // src/app/[locale]/matches/[id]/page.tsx
-import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { getSupabaseServerClient, getSupabaseAdminClient } from '@/lib/supabase/server'
 import { getPrediction } from '@/lib/getPrediction'
 import { hasActiveSubscription } from '@/lib/subscription'
 import { MatchHeader } from '@/components/matches/MatchHeader'
@@ -78,7 +78,7 @@ export default async function MatchPage({
 
   // Auth + subscription check
   const { data: { user } } = await supabase.auth.getUser()
-  const isPaid = user ? await hasActiveSubscription(supabase, user.id) : false
+  const isPaid = user ? await hasActiveSubscription(getSupabaseAdminClient(), user.id) : false
   const prediction = isPaid ? await getPrediction(id) : null
 
   return (
