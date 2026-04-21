@@ -18,6 +18,15 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Supabase password recovery lands on Site URL with ?code= — send to callback
+  if (pathname === '/' && request.nextUrl.searchParams.has('code')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/api/auth/callback'
+    url.searchParams.set('type', 'recovery')
+    url.searchParams.set('locale', defaultLocale)
+    return NextResponse.redirect(url)
+  }
+
   // Redirect root and unlocalized paths to default locale
   const url = request.nextUrl.clone()
   url.pathname = `/${defaultLocale}${pathname}`
