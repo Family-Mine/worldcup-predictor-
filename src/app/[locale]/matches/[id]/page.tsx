@@ -162,7 +162,7 @@ export default async function MatchPage({
 
       {/* Betting links */}
       <div className="mt-6">
-        <BettingLinksBar matchLabel={`${m.home_team.name} vs ${m.away_team.name}`} />
+        <BettingLinksBar matchLabel={`${m.home_team.name} vs ${m.away_team.name}`} locale={locale} />
       </div>
 
       {/* Head to head */}

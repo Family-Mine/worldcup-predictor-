@@ -1,26 +1,73 @@
 // src/components/betting/BettingLinksBar.tsx
-// IMPORTANT: Replace the `href` values below with your actual affiliate tracking links
-// once you sign up for each sportsbook's affiliate program:
-//   DraftKings  → https://affiliates.draftkings.com
-//   FanDuel     → https://affiliates.fanduel.com
-//   BetMGM      → https://affiliates.betmgm.com
-//   Caesars     → https://affiliates.caesars.com
-//   ESPN BET    → https://espnbet.com/affiliates
+// TODO: Replace href values with your actual affiliate tracking links after registering:
+//   Rushbet    → https://rushbet-app.com.co/programa-de-afiliados/
+//   Wplay      → https://afiliadosw.co
+//   Codere     → https://codere-partners.com/es/register/
+//   Bet365     → https://www.bet365partners.com/en
+//   Betsson    → https://www.betssongroupaffiliates.com/
+//   DraftKings → https://affiliates.draftkings.com
+//   FanDuel    → https://affiliates.fanduel.com
+//   BetMGM     → https://affiliates.betmgm.com
+//   Caesars    → https://affiliates.caesars.com
+//   ESPN BET   → https://espnbet.com/affiliates
 
 export interface BettingLinksBarProps {
-  matchLabel?: string // e.g. "Argentina vs Morocco" — used for context text
-  compact?: boolean   // smaller version for group-phase list
+  matchLabel?: string
+  compact?: boolean
+  locale?: string
 }
 
-const BOOKS = [
+const BOOKS_LATAM = [
+  {
+    name: 'Rushbet',
+    shortName: 'RB',
+    tagline: 'Bono de bienvenida',
+    accent: 'bg-orange-500/10 border-orange-500/30 text-orange-400',
+    dot: 'bg-orange-400',
+    href: 'https://rushbet.co', // TODO: reemplazar con link de afiliado
+  },
+  {
+    name: 'Wplay',
+    shortName: 'WP',
+    tagline: 'Apuestas en vivo',
+    accent: 'bg-green-500/10 border-green-500/30 text-green-400',
+    dot: 'bg-green-400',
+    href: 'https://wplay.co', // TODO: reemplazar con link de afiliado
+  },
+  {
+    name: 'Codere',
+    shortName: 'CD',
+    tagline: 'Hasta $200.000 de bono',
+    accent: 'bg-red-500/10 border-red-500/30 text-red-400',
+    dot: 'bg-red-400',
+    href: 'https://www.codere.co', // TODO: reemplazar con link de afiliado
+  },
+  {
+    name: 'Bet365',
+    shortName: 'B365',
+    tagline: 'Cuotas en vivo',
+    accent: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+    dot: 'bg-emerald-400',
+    href: 'https://www.bet365.com', // TODO: reemplazar con link de afiliado
+  },
+  {
+    name: 'Betsson',
+    shortName: 'BSN',
+    tagline: 'Bono primer depósito',
+    accent: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400',
+    dot: 'bg-yellow-400',
+    href: 'https://www.betsson.com', // TODO: reemplazar con link de afiliado
+  },
+] as const
+
+const BOOKS_EN = [
   {
     name: 'DraftKings',
     shortName: 'DK',
     tagline: 'Bet $5, Get $200',
     accent: 'bg-green-500/10 border-green-500/30 text-green-400',
     dot: 'bg-green-400',
-    // TODO: replace with your affiliate link
-    href: 'https://sportsbook.draftkings.com',
+    href: 'https://sportsbook.draftkings.com', // TODO: replace with affiliate link
   },
   {
     name: 'FanDuel',
@@ -28,8 +75,7 @@ const BOOKS = [
     tagline: 'No Sweat First Bet',
     accent: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
     dot: 'bg-blue-400',
-    // TODO: replace with your affiliate link
-    href: 'https://sportsbook.fanduel.com',
+    href: 'https://sportsbook.fanduel.com', // TODO: replace with affiliate link
   },
   {
     name: 'BetMGM',
@@ -37,8 +83,7 @@ const BOOKS = [
     tagline: 'First Bet Offer $1,500',
     accent: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
     dot: 'bg-amber-400',
-    // TODO: replace with your affiliate link
-    href: 'https://sports.betmgm.com',
+    href: 'https://sports.betmgm.com', // TODO: replace with affiliate link
   },
   {
     name: 'Caesars',
@@ -46,8 +91,7 @@ const BOOKS = [
     tagline: 'Your First Bet on Caesars',
     accent: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400',
     dot: 'bg-cyan-400',
-    // TODO: replace with your affiliate link
-    href: 'https://sportsbook.caesars.com',
+    href: 'https://sportsbook.caesars.com', // TODO: replace with affiliate link
   },
   {
     name: 'ESPN BET',
@@ -55,25 +99,35 @@ const BOOKS = [
     tagline: 'Bet $10, Get $150',
     accent: 'bg-red-500/10 border-red-500/30 text-red-400',
     dot: 'bg-red-400',
-    // TODO: replace with your affiliate link
-    href: 'https://espnbet.com',
+    href: 'https://espnbet.com', // TODO: replace with affiliate link
   },
 ] as const
 
-export function BettingLinksBar({ matchLabel, compact = false }: BettingLinksBarProps) {
+export function BettingLinksBar({ matchLabel, compact = false, locale = 'en' }: BettingLinksBarProps) {
+  const isEs = locale === 'es'
+  const books = isEs ? BOOKS_LATAM : BOOKS_EN
+  const adLabel = isEs ? 'Apuesta este partido' : 'Bet this match'
+  const ctaLabel = isEs ? 'Apostar →' : 'Bet Now →'
+  const headerLabel = isEs
+    ? (matchLabel ? `Apuesta en ${matchLabel}` : 'Haz tu apuesta')
+    : (matchLabel ? `Bet on ${matchLabel}` : 'Place Your Bets')
+  const disclaimer = isEs
+    ? 'Apuesta con responsabilidad. Solo para mayores de edad. Verifica la legalidad en tu país.'
+    : '21+ and present in a state where sports betting is legal. Gambling problem? Call 1-800-GAMBLER (1-800-426-2537). T&Cs apply.'
+
   if (compact) {
     return (
       <div className="border-t border-surface-border pt-4 mt-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-            Bet this match
+            {adLabel}
           </span>
           <span className="text-[10px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded font-bold">
             AD
           </span>
         </div>
         <div className="flex flex-wrap gap-2">
-          {BOOKS.map((book) => (
+          {books.map((book) => (
             <a
               key={book.name}
               href={book.href}
@@ -86,31 +140,25 @@ export function BettingLinksBar({ matchLabel, compact = false }: BettingLinksBar
             </a>
           ))}
         </div>
-        <p className="text-[10px] text-slate-600 mt-2">
-          21+ only. Gambling problem? Call 1-800-GAMBLER. Check state availability.
-        </p>
+        <p className="text-[10px] text-slate-600 mt-2">{disclaimer}</p>
       </div>
     )
   }
 
   return (
     <div className="bg-surface-card border border-surface-border rounded-xl p-5">
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-bold text-slate-300">
-            {matchLabel ? `Bet on ${matchLabel}` : 'Place Your Bets'}
-          </h3>
+          <h3 className="text-sm font-bold text-slate-300">{headerLabel}</h3>
           <span className="text-[10px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded font-bold">
             AD
           </span>
         </div>
-        <span className="text-xs text-slate-600">Exclusive offers</span>
+        <span className="text-xs text-slate-600">{isEs ? 'Ofertas exclusivas' : 'Exclusive offers'}</span>
       </div>
 
-      {/* Books grid */}
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
-        {BOOKS.map((book) => (
+        {books.map((book) => (
           <a
             key={book.name}
             href={book.href}
@@ -123,17 +171,12 @@ export function BettingLinksBar({ matchLabel, compact = false }: BettingLinksBar
               <span className="font-black text-sm">{book.name}</span>
             </div>
             <span className="text-[11px] text-slate-400 leading-tight">{book.tagline}</span>
-            <span className="text-[11px] font-semibold mt-auto pt-1">Bet Now →</span>
+            <span className="text-[11px] font-semibold mt-auto pt-1">{ctaLabel}</span>
           </a>
         ))}
       </div>
 
-      {/* Responsible gambling disclaimer */}
-      <p className="text-[11px] text-slate-600 mt-3 leading-relaxed">
-        21+ and present in a state where sports betting is legal. Gambling problem?
-        Call <span className="text-slate-500 font-medium">1-800-GAMBLER</span> (1-800-426-2537).
-        Offers vary by state. Must opt in. T&amp;Cs apply.
-      </p>
+      <p className="text-[11px] text-slate-600 mt-3 leading-relaxed">{disclaimer}</p>
     </div>
   )
 }

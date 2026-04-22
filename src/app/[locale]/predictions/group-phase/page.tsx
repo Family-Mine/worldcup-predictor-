@@ -334,7 +334,7 @@ export default async function GroupPhasePage({
 
       {/* Betting links */}
       <div className="mt-10">
-        <BettingLinksBar />
+        <BettingLinksBar locale={locale} />
       </div>
 
       {/* Footer note */}
