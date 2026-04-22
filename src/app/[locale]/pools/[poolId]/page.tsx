@@ -8,6 +8,7 @@ import Link from 'next/link'
 import type { LeaderboardEntryWithProfile, TournamentTopScorer } from '@/types/pools'
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
+import { PoolSettingsMenu } from '@/components/pools/PoolSettingsMenu'
 
 export const dynamic = 'force-dynamic'
 
@@ -119,6 +120,9 @@ export default async function PoolPage({
             >
               {t('special')}
             </Link>
+            {pool.created_by === user.id && (
+              <PoolSettingsMenu poolId={poolId} poolName={pool.name} locale={locale} />
+            )}
           </div>
         </div>
       </div>

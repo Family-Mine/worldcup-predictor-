@@ -78,6 +78,47 @@ export async function joinPool(_prev: unknown, formData: FormData) {
   redirect(`/${locale}/pools/${poolId}`)
 }
 
+// ── Rename pool ───────────────────────────────────────────────
+
+export async function renamePool(poolId: string, name: string): Promise<{ error?: string }> {
+  const { supabase, user } = await getUser()
+  if (!user) return { error: 'No autenticado.' }
+
+  const trimmed = name.trim()
+  if (!trimmed || trimmed.length < 3) return { error: 'El nombre debe tener al menos 3 caracteres.' }
+
+  const { error } = await supabase
+    .from('pools')
+    .update({ name: trimmed })
+    .eq('id', poolId)
+    .eq('created_by', user.id)
+
+  if (error) return { error: 'No se pudo actualizar el nombre.' }
+  return {}
+}
+
+// ── Delete pool ───────────────────────────────────────────────
+
+export async function deletePool(poolId: string, locale: string): Promise<{ error?: string }> {
+  const { supabase, user } = await getUser()
+  if (!user) return { error: 'No autenticado.' }
+
+  // Verify ownership before deleting
+  const { data: pool } = await supabase
+    .from('pools')
+    .select('id')
+    .eq('id', poolId)
+    .eq('created_by', user.id)
+    .single()
+
+  if (!pool) return { error: 'No tienes permiso para eliminar este grupo.' }
+
+  const { error } = await supabase.from('pools').delete().eq('id', poolId)
+  if (error) return { error: 'No se pudo eliminar el grupo.' }
+
+  redirect(`/${locale}/pools`)
+}
+
 // ── Submit pick ───────────────────────────────────────────────
 
 export async function submitPick(

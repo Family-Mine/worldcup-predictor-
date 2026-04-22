@@ -136,6 +136,13 @@
     "saved": "✓ Guardado",
     "save_special": "Guardar predicciones especiales",
     "deadline_locked": "Predicciones cerradas",
-    "deadline_open": "Cierra el {date} (hora Colombia)"
+    "deadline_open": "Cierra el {date} (hora Colombia)",
+    "settings": "Configuración del grupo",
+    "rename_group": "Renombrar grupo",
+    "delete_group": "Eliminar grupo",
+    "delete_confirm_title": "¿Eliminar este grupo?",
+    "delete_confirm_desc": "Esta acción es permanente. Se eliminarán todas las predicciones y el historial.",
+    "cancel": "Cancelar",
+    "save": "Guardar"
   }
 }

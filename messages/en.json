@@ -136,6 +136,13 @@
     "saved": "✓ Saved",
     "save_special": "Save special picks",
     "deadline_locked": "Picks closed",
-    "deadline_open": "Closes on {date} (Colombia time)"
+    "deadline_open": "Closes on {date} (Colombia time)",
+    "settings": "Group settings",
+    "rename_group": "Rename group",
+    "delete_group": "Delete group",
+    "delete_confirm_title": "Delete this group?",
+    "delete_confirm_desc": "This is permanent. All predictions and history will be deleted.",
+    "cancel": "Cancel",
+    "save": "Save"
   }
 }
