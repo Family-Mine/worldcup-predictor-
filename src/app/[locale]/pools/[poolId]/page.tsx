@@ -116,9 +116,9 @@ export default async function PoolPage({
             </Link>
             <Link
               href={`/${locale}/pools/${poolId}/special`}
-              className="px-4 py-2 border border-surface-border text-slate-300 text-sm rounded-xl hover:border-slate-400 transition-colors"
+              className="px-4 py-2 border border-fifa-gold/40 text-fifa-gold text-sm font-semibold rounded-xl hover:border-fifa-gold hover:bg-fifa-gold/5 transition-colors"
             >
-              {t('special')}
+              ⚽ {t('special')}
             </Link>
             {pool.created_by === user.id && (
               <PoolSettingsMenu poolId={poolId} poolName={pool.name} locale={locale} />

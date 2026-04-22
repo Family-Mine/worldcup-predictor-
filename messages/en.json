@@ -57,7 +57,7 @@
     "points": "points",
     "participants": "{count, plural, one {# participant} other {# participants}}",
     "my_predictions": "My predictions",
-    "special": "Special picks",
+    "special": "Top Scorer",
     "back_to_groups": "← My groups",
     "leaderboard_title": "Leaderboard",
     "scoring_system": "Scoring system",
