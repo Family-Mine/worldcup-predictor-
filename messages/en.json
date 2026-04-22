@@ -142,6 +142,13 @@
     "delete_confirm_title": "Delete this group?",
     "delete_confirm_desc": "This is permanent. All predictions and history will be deleted.",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "invite_banner_label": "WC26 Pool",
+    "invite_banner_title": "You're invited to join \"{pool}\"",
+    "invite_banner_subtitle": "Predict scores, pick your top scorer, and compete with friends on a live leaderboard.",
+    "invite_step_1": "Create a free account or sign in if you already have one",
+    "invite_step_2": "Predict the score for every World Cup match",
+    "invite_step_3": "Pick who will be the tournament's top goal scorer",
+    "invite_step_4": "Follow the live leaderboard and compete for the top spot"
   }
 }

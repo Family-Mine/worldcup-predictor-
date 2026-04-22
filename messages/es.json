@@ -142,6 +142,13 @@
     "delete_confirm_title": "¿Eliminar este grupo?",
     "delete_confirm_desc": "Esta acción es permanente. Se eliminarán todas las predicciones y el historial.",
     "cancel": "Cancelar",
-    "save": "Guardar"
+    "save": "Guardar",
+    "invite_banner_label": "Quinela WC26",
+    "invite_banner_title": "Te invitan a jugar en \"{pool}\"",
+    "invite_banner_subtitle": "Predice los marcadores, elige tu goleador y compite con tus amigos en tiempo real.",
+    "invite_step_1": "Crea tu cuenta gratuita o ingresa si ya tienes una",
+    "invite_step_2": "Predice el marcador de cada partido del Mundial",
+    "invite_step_3": "Elige quién será el máximo goleador del torneo",
+    "invite_step_4": "Sigue la tabla de posiciones y compite por el primer lugar"
   }
 }
