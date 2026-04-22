@@ -10,20 +10,12 @@ interface InviteCodeBannerProps {
 
 export function InviteCodeBanner({ inviteCode, inviteUrl }: InviteCodeBannerProps) {
   const t = useTranslations('pools')
-  const [copiedLink, setCopiedLink] = useState(false)
-  const [copiedCode, setCopiedCode] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   function copyLink() {
     navigator.clipboard.writeText(inviteUrl).then(() => {
-      setCopiedLink(true)
-      setTimeout(() => setCopiedLink(false), 2000)
-    })
-  }
-
-  function copyCode() {
-    navigator.clipboard.writeText(inviteCode).then(() => {
-      setCopiedCode(true)
-      setTimeout(() => setCopiedCode(false), 2000)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     })
   }
 
@@ -36,15 +28,9 @@ export function InviteCodeBanner({ inviteCode, inviteUrl }: InviteCodeBannerProp
         </span>
         <button
           onClick={copyLink}
-          className="ml-auto text-xs px-3 py-1.5 rounded-lg border border-surface-border hover:border-fifa-gold hover:text-fifa-gold transition-colors text-slate-400"
+          className="ml-auto text-xs px-4 py-1.5 rounded-lg border border-surface-border hover:border-fifa-gold hover:text-fifa-gold transition-colors text-slate-400"
         >
-          {copiedLink ? t('copied') : t('copy_link')}
-        </button>
-        <button
-          onClick={copyCode}
-          className="text-xs px-3 py-1.5 rounded-lg border border-surface-border hover:border-fifa-gold hover:text-fifa-gold transition-colors text-slate-400"
-        >
-          {copiedCode ? t('copied') : t('copy_code')}
+          {copied ? t('copied') : t('share_link')}
         </button>
       </div>
       <p className="text-xs text-slate-600 mt-2 truncate">{inviteUrl}</p>
