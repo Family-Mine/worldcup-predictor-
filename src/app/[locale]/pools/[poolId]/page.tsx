@@ -7,11 +7,12 @@ import { inviteUrl } from '@/lib/pools'
 import Link from 'next/link'
 import type { LeaderboardEntryWithProfile, TournamentTopScorer } from '@/types/pools'
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
-  return { title: 'Grupo · WC26 Predictor' }
+  return { title: 'Group · WC26 Predictor' }
 }
 
 export default async function PoolPage({
@@ -20,12 +21,12 @@ export default async function PoolPage({
   params: Promise<{ locale: string; poolId: string }>
 }) {
   const { locale, poolId } = await params
+  const t = await getTranslations({ locale, namespace: 'pools' })
   const supabase = getSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect(`/${locale}/login`)
 
-  // Load pool
   const { data: pool } = await supabase
     .from('pools')
     .select('*')
@@ -34,7 +35,6 @@ export default async function PoolPage({
 
   if (!pool) notFound()
 
-  // Verify membership
   const { data: membership } = await supabase
     .from('pool_members')
     .select('id')
@@ -43,11 +43,9 @@ export default async function PoolPage({
     .single()
 
   if (!membership) {
-    // Not a member — offer to join
     redirect(`/${locale}/pools/join?code=${pool.invite_code}`)
   }
 
-  // Load leaderboard + profiles + special picks + top scorer in parallel
   const [
     { data: leaderboardRows },
     { data: memberRows },
@@ -96,43 +94,41 @@ export default async function PoolPage({
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
-      {/* Back */}
       <Link href={`/${locale}/pools`} className="text-sm text-slate-500 hover:text-slate-300 transition-colors">
-        ← Mis grupos
+        {t('back_to_groups')}
       </Link>
 
-      {/* Pool header */}
       <div className="mt-6 mb-8">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black text-white">{pool.name}</h1>
-            <p className="text-slate-500 text-sm mt-1">{allEntries.length} participante{allEntries.length !== 1 ? 's' : ''}</p>
+            <p className="text-slate-500 text-sm mt-1">
+              {t('participants', { count: allEntries.length })}
+            </p>
           </div>
           <div className="flex gap-2 flex-shrink-0">
             <Link
               href={`/${locale}/pools/${poolId}/picks`}
               className="px-4 py-2 bg-fifa-green text-white font-bold text-sm rounded-xl hover:bg-green-500 transition-colors"
             >
-              Mis predicciones
+              {t('my_predictions')}
             </Link>
             <Link
               href={`/${locale}/pools/${poolId}/special`}
               className="px-4 py-2 border border-surface-border text-slate-300 text-sm rounded-xl hover:border-slate-400 transition-colors"
             >
-              Especiales
+              {t('special')}
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Invite banner */}
       <div className="mb-8">
         <InviteCodeBanner inviteCode={pool.invite_code} inviteUrl={url} />
       </div>
 
-      {/* Leaderboard */}
       <div>
-        <h2 className="text-lg font-bold text-white mb-4">Tabla de posiciones</h2>
+        <h2 className="text-lg font-bold text-white mb-4">{t('leaderboard_title')}</h2>
         <PoolLeaderboard
           entries={allEntries}
           currentUserId={user.id}
@@ -141,21 +137,20 @@ export default async function PoolPage({
         />
       </div>
 
-      {/* Scoring rules */}
       <div className="mt-8 p-4 bg-surface-card border border-surface-border rounded-xl">
-        <h3 className="text-xs text-slate-500 uppercase tracking-widest mb-3">Sistema de puntos</h3>
+        <h3 className="text-xs text-slate-500 uppercase tracking-widest mb-3">{t('scoring_system')}</h3>
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
             <p className="text-2xl font-black text-green-400">3</p>
-            <p className="text-xs text-slate-400 mt-1">Marcador exacto</p>
+            <p className="text-xs text-slate-400 mt-1">{t('exact_score')}</p>
           </div>
           <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
             <p className="text-2xl font-black text-yellow-400">1</p>
-            <p className="text-xs text-slate-400 mt-1">Ganador correcto</p>
+            <p className="text-xs text-slate-400 mt-1">{t('correct_winner')}</p>
           </div>
           <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
             <p className="text-2xl font-black text-red-400">0</p>
-            <p className="text-xs text-slate-400 mt-1">Predicción incorrecta</p>
+            <p className="text-xs text-slate-400 mt-1">{t('wrong_prediction')}</p>
           </div>
         </div>
       </div>

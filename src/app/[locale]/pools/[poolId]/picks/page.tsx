@@ -5,9 +5,15 @@ import { PicksGrid } from '@/components/pools/PicksGrid'
 import Link from 'next/link'
 import type { MatchWithTeams } from '@/types/database'
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 
-export const metadata: Metadata = { title: 'Mis predicciones · WC26' }
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'pools' })
+  return { title: `${t('picks_title')} · WC26` }
+}
 
 type Tab = 'groups' | 'knockout'
 
@@ -21,12 +27,12 @@ export default async function PicksPage({
   const supabase = getSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { locale, poolId } = params
+  const t = await getTranslations({ locale, namespace: 'pools' })
 
   if (!user) redirect(`/${locale}/login`)
 
   const activeTab: Tab = searchParams.tab === 'knockout' ? 'knockout' : 'groups'
 
-  // Verify pool membership
   const { data: pool } = await supabase
     .from('pools')
     .select('id, name')
@@ -44,7 +50,6 @@ export default async function PicksPage({
 
   if (!membership) redirect(`/${locale}/pools`)
 
-  // Load matches for the active tab
   const matchQuery = activeTab === 'groups'
     ? supabase
         .from('matches')
@@ -62,7 +67,6 @@ export default async function PicksPage({
   const { data: matchRows } = await matchQuery
   const matches = (matchRows ?? []) as MatchWithTeams[]
 
-  // Load user's existing picks for this pool
   const { data: existingPicks } = await supabase
     .from('pool_picks')
     .select('*')
@@ -76,14 +80,17 @@ export default async function PicksPage({
   const picksCount = picksForTab.length
   const totalMatches = matches.length
 
-  // Check if knockout phase has any teams confirmed yet
   const knockoutHasTeams = activeTab === 'knockout'
     ? matches.some(m => m.home_team_id !== null)
     : true
 
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'groups',   label: t('group_phase_tab') },
+    { id: 'knockout', label: t('knockout_tab') },
+  ]
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
-      {/* Header */}
       <Link
         href={`/${locale}/pools/${poolId}`}
         className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
@@ -93,20 +100,16 @@ export default async function PicksPage({
 
       <div className="mt-6 mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white">Mis predicciones</h1>
+          <h1 className="text-2xl font-black text-white">{t('picks_title')}</h1>
         </div>
         <div className="text-right">
           <p className="text-2xl font-black text-fifa-gold">{picksCount}</p>
-          <p className="text-xs text-slate-500">de {totalMatches} completados</p>
+          <p className="text-xs text-slate-500">{t('completed_of', { total: totalMatches })}</p>
         </div>
       </div>
 
-      {/* Phase tabs */}
       <div className="flex gap-1 p-1 bg-surface-card border border-surface-border rounded-xl mb-6">
-        {([
-          { id: 'groups',   label: '🏁 Fase de Grupos' },
-          { id: 'knockout', label: '⚡ Knockout' },
-        ] as { id: Tab; label: string }[]).map(tab => (
+        {tabs.map(tab => (
           <Link
             key={tab.id}
             href={`/${locale}/pools/${poolId}/picks?tab=${tab.id}`}
@@ -121,7 +124,6 @@ export default async function PicksPage({
         ))}
       </div>
 
-      {/* Progress bar */}
       {totalMatches > 0 && (
         <div className="h-1.5 bg-surface-border rounded-full mb-8 overflow-hidden">
           <div
@@ -131,17 +133,16 @@ export default async function PicksPage({
         </div>
       )}
 
-      {/* Content */}
       {activeTab === 'knockout' && !knockoutHasTeams ? (
         <div className="text-center py-16 border border-surface-border rounded-xl">
           <p className="text-4xl mb-4">⚡</p>
-          <p className="text-slate-300 font-semibold">Los picks de eliminatorias estarán disponibles</p>
-          <p className="text-slate-500 text-sm mt-2">cuando se conozcan los equipos de cada llave</p>
-          <p className="text-xs text-slate-600 mt-4">El cron actualiza los equipos diariamente</p>
+          <p className="text-slate-300 font-semibold">{t('knockout_not_ready')}</p>
+          <p className="text-slate-500 text-sm mt-2">{t('knockout_wait')}</p>
+          <p className="text-xs text-slate-600 mt-4">{t('cron_note')}</p>
         </div>
       ) : totalMatches === 0 ? (
         <div className="text-center py-16 text-slate-500">
-          <p className="text-sm">No hay partidos disponibles en esta fase todavía.</p>
+          <p className="text-sm">{t('no_matches')}</p>
         </div>
       ) : (
         <PicksGrid

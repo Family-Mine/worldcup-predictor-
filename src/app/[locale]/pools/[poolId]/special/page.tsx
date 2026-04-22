@@ -4,9 +4,15 @@ import { redirect, notFound } from 'next/navigation'
 import { SpecialPicksForm } from '@/components/pools/SpecialPicksForm'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 
-export const metadata: Metadata = { title: 'Predicciones especiales · WC26' }
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'pools' })
+  return { title: `${t('special_title')} · WC26` }
+}
 
 export default async function SpecialPage({
   params,
@@ -14,6 +20,7 @@ export default async function SpecialPage({
   params: Promise<{ locale: string; poolId: string }>
 }) {
   const { locale, poolId } = await params
+  const t = await getTranslations({ locale, namespace: 'pools' })
   const supabase = getSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -32,7 +39,6 @@ export default async function SpecialPage({
     .from('pool_special_picks').select('*')
     .eq('pool_id', poolId).eq('user_id', user.id).single()
 
-  // All members' special picks for comparison
   const { data: allSpecial } = await supabase
     .from('pool_special_picks').select('user_id, top_scorer_tournament, top_scorer_group_phase')
     .eq('pool_id', poolId)
@@ -52,17 +58,14 @@ export default async function SpecialPage({
         ← {pool.name}
       </Link>
 
-      <h1 className="text-2xl font-black text-white mt-6 mb-2">Predicciones especiales</h1>
-      <p className="text-slate-400 text-sm mb-8">
-        Quién será el máximo goleador — el que acierte gana puntos de bonificación al final.
-      </p>
+      <h1 className="text-2xl font-black text-white mt-6 mb-2">{t('special_title')}</h1>
+      <p className="text-slate-400 text-sm mb-8">{t('special_subtitle')}</p>
 
       <SpecialPicksForm poolId={poolId} existing={existing ?? null} />
 
-      {/* Others' picks */}
       {(allSpecial ?? []).length > 0 && (
         <div className="mt-10">
-          <h2 className="text-sm font-semibold text-white mb-4">Predicciones del grupo</h2>
+          <h2 className="text-sm font-semibold text-white mb-4">{t('group_picks_title')}</h2>
           <div className="space-y-3">
             {(allSpecial ?? []).map(sp => {
               const profile = profileMap[sp.user_id]
@@ -74,16 +77,16 @@ export default async function SpecialPage({
                 >
                   <p className={`font-semibold mb-2 ${isMe ? 'text-fifa-green' : 'text-slate-300'}`}>
                     {profile?.display_name ?? sp.user_id.slice(0, 8)}
-                    {isMe && ' (tú)'}
+                    {isMe && <span className="text-xs text-slate-500 ml-1">({t('you')})</span>}
                   </p>
                   {sp.top_scorer_group_phase && (
                     <p className="text-slate-400 text-xs">
-                      ⚽ Fase grupos: <span className="text-white">{sp.top_scorer_group_phase}</span>
+                      ⚽ {t('group_phase_label')} <span className="text-white">{sp.top_scorer_group_phase}</span>
                     </p>
                   )}
                   {sp.top_scorer_tournament && (
                     <p className="text-slate-400 text-xs mt-1">
-                      🏆 Torneo: <span className="text-white">{sp.top_scorer_tournament}</span>
+                      🏆 {t('tournament_label')} <span className="text-white">{sp.top_scorer_tournament}</span>
                     </p>
                   )}
                 </div>

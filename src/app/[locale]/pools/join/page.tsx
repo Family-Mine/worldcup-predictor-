@@ -5,16 +5,18 @@ import { useFormState, useFormStatus } from 'react-dom'
 import { joinPool } from '@/app/actions/pools'
 import Link from 'next/link'
 import { Suspense } from 'react'
+import { useTranslations } from 'next-intl'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
+  const t = useTranslations('pools')
   return (
     <button
       type="submit"
       disabled={pending}
       className="w-full bg-fifa-green text-white font-bold py-3 rounded-xl hover:bg-green-500 transition-colors disabled:opacity-60"
     >
-      {pending ? 'Uniéndome…' : 'Unirme al grupo'}
+      {pending ? t('joining') : t('join_group')}
     </button>
   )
 }
@@ -22,6 +24,7 @@ function SubmitButton() {
 function JoinForm({ locale }: { locale: string }) {
   const searchParams = useSearchParams()
   const code = searchParams.get('code') ?? ''
+  const t = useTranslations('pools')
   const [state, action] = useFormState(joinPool, undefined)
 
   return (
@@ -29,14 +32,14 @@ function JoinForm({ locale }: { locale: string }) {
       <input type="hidden" name="locale" value={locale} />
       <div>
         <label className="block text-xs text-slate-500 uppercase tracking-widest mb-2">
-          Código de invitación
+          {t('invite_code_label')}
         </label>
         <input
           name="code"
           type="text"
           required
           defaultValue={code}
-          placeholder="Ej: ABCD1234"
+          placeholder="ABCD1234"
           maxLength={8}
           className="w-full bg-surface border border-surface-border rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-fifa-gold focus:outline-none text-sm font-mono uppercase tracking-widest text-center"
         />
@@ -54,26 +57,25 @@ function JoinForm({ locale }: { locale: string }) {
 export default function JoinPoolPage() {
   const params = useParams()
   const locale = params.locale as string
+  const t = useTranslations('pools')
 
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <Link href={`/${locale}/pools`} className="text-sm text-slate-500 hover:text-slate-300 transition-colors">
-        ← Mis grupos
+        {t('back_to_groups')}
       </Link>
 
-      <h1 className="text-3xl font-black text-white mt-6 mb-2">Unirme a un grupo</h1>
-      <p className="text-slate-400 text-sm mb-8">
-        Ingresa el código que te compartió tu amigo.
-      </p>
+      <h1 className="text-3xl font-black text-white mt-6 mb-2">{t('join_title')}</h1>
+      <p className="text-slate-400 text-sm mb-8">{t('join_subtitle')}</p>
 
       <Suspense fallback={<div className="h-32" />}>
         <JoinForm locale={locale} />
       </Suspense>
 
       <p className="text-center text-sm text-slate-500 mt-6">
-        ¿No tienes código?{' '}
+        {t('no_code')}{' '}
         <Link href={`/${locale}/pools/new`} className="text-fifa-gold hover:underline">
-          Crea tu propio grupo
+          {t('create_your_own')}
         </Link>
       </p>
     </div>
