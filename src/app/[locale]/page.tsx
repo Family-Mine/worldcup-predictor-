@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl'
 import { setRequestLocale } from 'next-intl/server'
 import Link from 'next/link'
 import { CountdownTimer } from '@/components/ui/CountdownTimer'
+import { UnlockButton } from '@/components/ui/UnlockButton'
 
 const WORLD_CUP_KICKOFF = '2026-06-11T18:00:00Z'
 
@@ -37,9 +38,7 @@ export default function LandingPage({ params: { locale } }: { params: { locale: 
           >
             {t('cta_explore')}
           </Link>
-          <button className="px-8 py-4 bg-fifa-green text-white rounded-xl font-bold hover:bg-green-500 transition-colors">
-            {t('cta_unlock')}
-          </button>
+          <UnlockButton label={t('cta_unlock')} locale={locale} />
         </div>
 
         {/* Countdown */}
