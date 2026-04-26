@@ -1,6 +1,5 @@
-// src/app/api/auth/callback/route.ts
 import { NextResponse } from 'next/server'
-import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -8,14 +7,31 @@ export async function GET(request: Request) {
   const type = searchParams.get('type')
   const locale = searchParams.get('locale') ?? 'es'
 
+  const redirectUrl = type === 'recovery'
+    ? `${origin}/${locale}/reset-password`
+    : `${origin}/${locale}`
+
+  const response = NextResponse.redirect(redirectUrl)
+
   if (code) {
-    const supabase = getSupabaseServerClient()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
     await supabase.auth.exchangeCodeForSession(code)
   }
 
-  if (type === 'recovery') {
-    return NextResponse.redirect(`${origin}/${locale}/reset-password`)
-  }
-
-  return NextResponse.redirect(`${origin}/${locale}`)
+  return response
 }

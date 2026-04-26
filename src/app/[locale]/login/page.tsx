@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'
 import { LogoMark } from '@/components/layout/LogoMark'
+import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
 
 export default function LoginPage() {
   const params = useParams()
@@ -50,6 +51,14 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-surface-card border border-surface-border rounded-xl p-6 space-y-4">
+          <SocialAuthButtons locale={locale} />
+
+          <div className="relative flex items-center gap-3">
+            <div className="flex-1 h-px bg-surface-border" />
+            <span className="text-xs text-slate-500 uppercase tracking-wider">or</span>
+            <div className="flex-1 h-px bg-surface-border" />
+          </div>
+
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm">
               {error}
