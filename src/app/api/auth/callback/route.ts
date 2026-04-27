@@ -5,9 +5,11 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const type = searchParams.get('type')
+  const flow = searchParams.get('flow')
   const locale = searchParams.get('locale') ?? 'es'
 
-  const redirectUrl = type === 'recovery'
+  const isPasswordReset = type === 'recovery' && flow !== 'oauth'
+  const redirectUrl = isPasswordReset
     ? `${origin}/${locale}/reset-password`
     : `${origin}/${locale}`
 

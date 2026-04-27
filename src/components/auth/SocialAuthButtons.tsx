@@ -45,7 +45,7 @@ export function SocialAuthButtons({ locale }: Props) {
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${appUrl}/api/auth/callback?locale=${locale}`,
+        redirectTo: `${appUrl}/api/auth/callback?locale=${locale}&flow=oauth`,
       },
     })
   }
