@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { LanguageToggle } from '@/components/ui/LanguageToggle'
 import { LogoMark } from '@/components/layout/LogoMark'
+import { MobileMenu } from '@/components/layout/MobileMenu'
 import { signOut } from '@/app/actions/auth'
 import type { User } from '@supabase/supabase-js'
 
@@ -23,9 +24,10 @@ export function Navbar({ user }: NavbarProps) {
         </Link>
 
         <div className="flex items-center gap-4">
+          {/* Desktop nav links */}
           <Link
             href={`${prefix}/groups`}
-            className="text-slate-300 hover:text-white text-sm transition-colors"
+            className="hidden sm:block text-slate-300 hover:text-white text-sm transition-colors"
           >
             {t('groups')}
           </Link>
@@ -47,9 +49,10 @@ export function Navbar({ user }: NavbarProps) {
 
           <LanguageToggle />
 
+          {/* Desktop auth */}
           {user ? (
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-slate-400 hidden sm:block truncate max-w-[140px]">
+            <div className="hidden sm:flex items-center gap-3">
+              <span className="text-xs text-slate-400 truncate max-w-[140px]">
                 {user.email}
               </span>
               <form action={signOut.bind(null, locale)}>
@@ -62,7 +65,7 @@ export function Navbar({ user }: NavbarProps) {
               </form>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <Link
                 href={`${prefix}/login`}
                 className="text-sm text-slate-300 hover:text-white transition-colors"
@@ -77,6 +80,9 @@ export function Navbar({ user }: NavbarProps) {
               </Link>
             </div>
           )}
+
+          {/* Mobile hamburger */}
+          <MobileMenu user={user} />
         </div>
       </div>
     </nav>

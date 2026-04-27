@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2025-03-31.basil' })
-
 const PRODUCTS = {
   predictions: {
     name: 'WC26 Predictor — Unlock All Predictions',
@@ -21,6 +19,7 @@ const PRODUCTS = {
 type ProductKey = keyof typeof PRODUCTS
 
 export async function POST(req: NextRequest) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2025-03-31.basil' })
   const supabase = getSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
