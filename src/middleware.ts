@@ -18,11 +18,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Supabase password recovery lands on Site URL with ?code= — send to callback
+  // Supabase redirects to Site URL with ?code= when redirectTo is not used
   if (pathname === '/' && request.nextUrl.searchParams.has('code')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/api/auth/callback'
-    url.searchParams.set('type', 'recovery')
+    const type = request.nextUrl.searchParams.get('type')
+    url.pathname = type === 'recovery' ? '/api/auth/callback' : '/api/auth/callback/oauth'
     url.searchParams.set('locale', defaultLocale)
     return NextResponse.redirect(url)
   }
