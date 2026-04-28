@@ -4,9 +4,13 @@ import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
 function db() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!key) {
+    console.error('[webhook] SUPABASE_SERVICE_ROLE_KEY is not set — falling back to anon key, upserts will fail due to RLS')
+  }
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    key ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 }
 
@@ -37,8 +41,7 @@ export async function POST(req: NextRequest) {
       const supabase = db()
 
       if (productType === 'group_bundle') {
-        // Group bundle ($9.99) includes base subscription + group phase access
-        await Promise.all([
+        const [subResult, addOnResult] = await Promise.all([
           supabase.from('subscriptions').upsert(
             {
               user_id: userId,
@@ -58,8 +61,10 @@ export async function POST(req: NextRequest) {
             { onConflict: 'user_id,add_on' }
           ),
         ])
+        if (subResult.error) console.error('[webhook] subscriptions upsert failed:', subResult.error)
+        if (addOnResult.error) console.error('[webhook] user_add_ons upsert failed:', addOnResult.error)
       } else {
-        await supabase.from('subscriptions').upsert(
+        const { error: subError } = await supabase.from('subscriptions').upsert(
           {
             user_id: userId,
             stripe_customer_id: session.customer as string,
@@ -69,6 +74,7 @@ export async function POST(req: NextRequest) {
           },
           { onConflict: 'user_id' }
         )
+        if (subError) console.error('[webhook] subscriptions upsert failed:', subError)
       }
     }
   }

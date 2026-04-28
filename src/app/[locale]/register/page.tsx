@@ -1,6 +1,6 @@
 'use client'
 // src/app/[locale]/register/page.tsx
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { signUp } from '@/app/actions/auth'
 import Link from 'next/link'
@@ -9,9 +9,11 @@ import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
 
 export default function RegisterPage() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const locale = (params.locale as string) || 'en'
   const prefix = `/${locale}`
   const [error, setError] = useState<string | null>(null)
+  const oauthError = searchParams.get('oauth_error')
   const [success, setSuccess] = useState(false)
   const [isPending, startTransition] = useTransition()
 
@@ -69,6 +71,14 @@ export default function RegisterPage() {
           <h1 className="text-2xl font-bold text-white">Create account</h1>
           <p className="text-slate-400 text-sm mt-1">Start predicting the World Cup</p>
         </div>
+
+        {oauthError && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-amber-400 text-sm mb-4">
+            {locale === 'es'
+              ? 'No se pudo completar el registro. Abre el sitio directamente en Safari o Chrome e inténtalo de nuevo.'
+              : 'Registration could not be completed. Open the site directly in Safari or Chrome and try again.'}
+          </div>
+        )}
 
         <div className="bg-surface-card border border-surface-border rounded-xl p-6 space-y-4">
           <SocialAuthButtons locale={locale} />

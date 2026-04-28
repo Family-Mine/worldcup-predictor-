@@ -7,11 +7,10 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get('type')
   const locale = searchParams.get('locale') ?? 'es'
 
-  const redirectUrl = type === 'recovery'
-    ? `${origin}/${locale}/reset-password`
-    : `${origin}/${locale}`
+  // Default: go home. Only go to reset-password for email recovery sessions.
+  let destination = `${origin}/${locale}`
 
-  const response = NextResponse.redirect(redirectUrl)
+  const response = NextResponse.redirect(destination)
 
   if (code) {
     const supabase = createServerClient(
@@ -30,7 +29,18 @@ export async function GET(request: NextRequest) {
         },
       }
     )
-    await supabase.auth.exchangeCodeForSession(code)
+    const { data } = await supabase.auth.exchangeCodeForSession(code)
+
+    // Only redirect to reset-password if this is genuinely an email recovery session.
+    // Social OAuth (Google/Apple) should never land on reset-password even if
+    // Supabase included type=recovery in the callback URL.
+    const provider = data?.session?.user?.app_metadata?.provider
+    const isSocialOAuth = provider === 'google' || provider === 'apple'
+
+    if (type === 'recovery' && !isSocialOAuth) {
+      destination = `${origin}/${locale}/reset-password`
+      return NextResponse.redirect(destination, { headers: response.headers })
+    }
   }
 
   return response

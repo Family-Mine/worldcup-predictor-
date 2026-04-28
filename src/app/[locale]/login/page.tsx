@@ -1,6 +1,6 @@
 'use client'
 // src/app/[locale]/login/page.tsx
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'
 import { LogoMark } from '@/components/layout/LogoMark'
@@ -8,12 +8,15 @@ import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
 
 export default function LoginPage() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const locale = (params?.locale as string) || 'en'
   const prefix = `/${locale}`
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const oauthError = searchParams.get('oauth_error')
 
   async function handleSignIn() {
     if (!email || !password) return
@@ -49,6 +52,14 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-white">Sign in</h1>
           <p className="text-slate-400 text-sm mt-1">Welcome back</p>
         </div>
+
+        {oauthError && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-amber-400 text-sm mb-4">
+            {locale === 'es'
+              ? 'No se pudo completar el inicio de sesión. Abre el sitio directamente en Safari o Chrome e inténtalo de nuevo.'
+              : 'Sign-in could not be completed. Open the site directly in Safari or Chrome and try again.'}
+          </div>
+        )}
 
         <div className="bg-surface-card border border-surface-border rounded-xl p-6 space-y-4">
           <SocialAuthButtons locale={locale} />
