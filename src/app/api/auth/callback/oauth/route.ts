@@ -4,14 +4,9 @@ import { createServerClient } from '@supabase/ssr'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const type = searchParams.get('type')
   const locale = searchParams.get('locale') ?? 'es'
 
-  const redirectUrl = type === 'recovery'
-    ? `${origin}/${locale}/reset-password`
-    : `${origin}/${locale}`
-
-  const response = NextResponse.redirect(redirectUrl)
+  const response = NextResponse.redirect(`${origin}/${locale}`)
 
   if (code) {
     const supabase = createServerClient(
