@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
       product_type: product,
     },
     customer_email: user.email,
+    customer_creation: 'always',
     success_url: `${returnUrl}?unlocked=1`,
     cancel_url: returnUrl,
   })
