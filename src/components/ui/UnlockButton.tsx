@@ -21,10 +21,12 @@ export function UnlockButton({
   className,
 }: UnlockButtonProps) {
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   async function handleClick() {
     setLoading(true)
+    setError(null)
     try {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
@@ -40,10 +42,14 @@ export function UnlockButton({
         return
       }
 
-      const data = await res.json()
-      if (data.url) {
+      const data = await res.json().catch(() => null)
+      if (data?.url) {
         window.location.href = data.url
+        return
       }
+      setError(data?.error ?? 'Could not start checkout. Please try again.')
+    } catch {
+      setError('Network error. Please check your connection and try again.')
     } finally {
       setLoading(false)
     }
@@ -56,12 +62,15 @@ export function UnlockButton({
       : 'bg-surface border border-surface-border text-white hover:border-slate-500'
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={loading}
-      className={className ?? `px-8 py-4 ${baseStyles} ${variantStyles}`}
-    >
-      {loading ? '...' : label}
-    </button>
+    <div className="flex flex-col items-stretch gap-2">
+      <button
+        onClick={handleClick}
+        disabled={loading}
+        className={className ?? `px-8 py-4 ${baseStyles} ${variantStyles}`}
+      >
+        {loading ? '...' : label}
+      </button>
+      {error && <p className="text-red-400 text-xs text-center">{error}</p>}
+    </div>
   )
 }

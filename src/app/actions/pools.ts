@@ -2,6 +2,7 @@
 // src/app/actions/pools.ts
 import { redirect } from 'next/navigation'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { hasActiveSubscription } from '@/lib/subscription'
 import { isMatchLocked } from '@/lib/pools'
 
 async function getUser() {
@@ -10,12 +11,19 @@ async function getUser() {
   return { supabase, user }
 }
 
+async function requirePaidUser(locale: string) {
+  const { supabase, user } = await getUser()
+  if (!user) redirect(`/${locale}/login`)
+  const paid = await hasActiveSubscription(supabase, user.id)
+  return { supabase, user, paid }
+}
+
 // ── Create pool ───────────────────────────────────────────────
 
 export async function createPool(_prev: unknown, formData: FormData) {
-  const { supabase, user } = await getUser()
   const locale = (formData.get('locale') as string) || 'en'
-  if (!user) redirect(`/${locale}/login`)
+  const { supabase, user, paid } = await requirePaidUser(locale)
+  if (!paid) return { error: 'Necesitas una suscripción activa para crear quinelas.' }
 
   const name = (formData.get('name') as string)?.trim()
   if (!name || name.length < 3) return { error: 'El nombre debe tener al menos 3 caracteres.' }
@@ -47,9 +55,9 @@ export async function createPool(_prev: unknown, formData: FormData) {
 // ── Join pool ─────────────────────────────────────────────────
 
 export async function joinPool(_prev: unknown, formData: FormData) {
-  const { supabase, user } = await getUser()
   const locale = (formData.get('locale') as string) || 'en'
-  if (!user) redirect(`/${locale}/login`)
+  const { supabase, user, paid } = await requirePaidUser(locale)
+  if (!paid) return { error: 'Necesitas una suscripción activa para unirte a una quinela.' }
 
   const code = (formData.get('code') as string)?.trim().toUpperCase()
   if (!code) return { error: 'Ingresa el código de invitación.' }
@@ -130,6 +138,9 @@ export async function submitPick(
   const { supabase, user } = await getUser()
   if (!user) return { error: 'No autenticado.' }
 
+  const paid = await hasActiveSubscription(supabase, user.id)
+  if (!paid) return { error: 'Necesitas una suscripción activa para guardar predicciones.' }
+
   // Check match lock
   const { data: match } = await supabase
     .from('matches')
@@ -170,6 +181,9 @@ export async function submitSpecialPick(
   }
   const { supabase, user } = await getUser()
   if (!user) return { error: 'No autenticado.' }
+
+  const paid = await hasActiveSubscription(supabase, user.id)
+  if (!paid) return { error: 'Necesitas una suscripción activa para guardar predicciones.' }
 
   const { error } = await supabase.from('pool_special_picks').upsert(
     {

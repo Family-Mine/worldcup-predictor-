@@ -9,6 +9,11 @@ function db() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key)
 }
 
+// Default expiry covers the World Cup final (Jul 19, 2026) plus a safety buffer
+// for refunds, disputes, and post-tournament access. Override via env if needed.
+const SUBSCRIPTION_EXPIRES_AT =
+  process.env.SUBSCRIPTION_EXPIRES_AT ?? '2026-10-01T00:00:00Z'
+
 export async function POST(req: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2025-03-31.basil' })
   const body = await req.text()
@@ -58,7 +63,7 @@ export async function POST(req: NextRequest) {
               stripe_customer_id: stripeCustomerId,
               stripe_payment_intent_id: stripePaymentIntentId,
               status: 'active',
-              expires_at: '2026-08-01T00:00:00Z',
+              expires_at: SUBSCRIPTION_EXPIRES_AT,
             },
             { onConflict: 'user_id' }
           ),

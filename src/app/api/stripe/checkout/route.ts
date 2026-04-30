@@ -29,7 +29,18 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json()
   const product: ProductKey = body.product === 'group_bundle' ? 'group_bundle' : 'predictions'
-  const returnUrl = body.returnUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const appOrigin = new URL(appUrl).origin
+  let returnUrl = appUrl
+  if (typeof body.returnUrl === 'string') {
+    try {
+      const candidate = new URL(body.returnUrl)
+      if (candidate.origin === appOrigin) returnUrl = candidate.toString()
+    } catch {
+      // invalid URL — keep default
+    }
+  }
 
   const { name, description, unit_amount } = PRODUCTS[product]
 
