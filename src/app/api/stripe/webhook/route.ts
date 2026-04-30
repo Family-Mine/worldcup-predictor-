@@ -14,15 +14,14 @@ export async function POST(req: NextRequest) {
   const body = await req.text()
   const sig = req.headers.get('stripe-signature')!
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  if (!webhookSecret) {
+    console.error('[webhook] STRIPE_WEBHOOK_SECRET is not set')
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 })
+  }
 
   let event: Stripe.Event
-
   try {
-    if (webhookSecret) {
-      event = stripe.webhooks.constructEvent(body, sig, webhookSecret)
-    } else {
-      event = JSON.parse(body) as Stripe.Event
-    }
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret)
   } catch {
     return NextResponse.json({ error: 'Webhook signature invalid' }, { status: 400 })
   }
@@ -44,8 +43,12 @@ export async function POST(req: NextRequest) {
     try {
       const supabase = db()
 
-      const stripeCustomerId = (session.customer as string) ?? ''
-      const stripePaymentIntentId = (session.payment_intent as string) ?? ''
+      const stripeCustomerId =
+        typeof session.customer === 'string' ? session.customer : (session.customer?.id ?? '')
+      const stripePaymentIntentId =
+        typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : (session.payment_intent?.id ?? '')
 
       if (productType === 'group_bundle') {
         const [subResult, addOnResult] = await Promise.all([

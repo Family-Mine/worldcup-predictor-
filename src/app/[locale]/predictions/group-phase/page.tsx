@@ -214,7 +214,7 @@ export default async function GroupPhasePage({
 
   // No bundle → show payment pending spinner or bundle gate
   if (!hasBundle && !isPreview) {
-    if (unlocked === '1') {
+    if (unlocked === '1' && user) {
       return (
         <div className="max-w-2xl mx-auto px-4 py-16">
           <PaymentPending />
