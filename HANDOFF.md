@@ -111,11 +111,9 @@ git push
 # Vercel despliega automáticamente desde main
 ```
 
-### 2. Stripe en producción
-- Cambiar `STRIPE_SECRET_KEY` de `sk_test_...` a `sk_live_...` en Vercel env vars
-- Configurar webhook en Stripe Dashboard: `https://worldcup-predictor-lovat.vercel.app/api/stripe/webhook`
-- Actualizar `STRIPE_WEBHOOK_SECRET` con el signing secret del webhook live
-- Probar flujo completo con tarjeta real
+### 2. ~~Stripe en producción~~ ✅ COMPLETO (2026-04-27)
+- sk_live + pk_live activos en Vercel
+- Webhook apuntando a wc26predictor.com, signing secret configurado
 
 ### 3. Línea dorada en cards (diseño)
 - Home hero: agregar `<div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-fifa-gold to-yellow-700" />` al panel principal

@@ -4,6 +4,7 @@ import { getPrediction } from '@/lib/getPrediction'
 import { hasActiveSubscription, hasGroupBundle } from '@/lib/subscription'
 import { TeamFlag } from '@/components/teams/TeamFlag'
 import { GroupBundleGate } from '@/components/predictions/GroupBundleGate'
+import { PaymentPending } from '@/components/predictions/PaymentPending'
 import { BettingLinksBar } from '@/components/betting/BettingLinksBar'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -193,7 +194,7 @@ export default async function GroupPhasePage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ preview?: string }>
+  searchParams: Promise<{ preview?: string; unlocked?: string }>
 }) {
   const { locale } = await params
   const resolvedSearch = await searchParams
@@ -201,6 +202,7 @@ export default async function GroupPhasePage({
 
   // Dev-only preview bypass
   const isPreview = process.env.NODE_ENV === 'development' && resolvedSearch.preview === '1'
+  const unlocked = resolvedSearch.unlocked
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -210,8 +212,15 @@ export default async function GroupPhasePage({
     user ? hasGroupBundle(supabase, user.id) : Promise.resolve(false),
   ])
 
-  // No bundle → show bundle gate (handles both no-sub and sub-but-no-bundle cases)
+  // No bundle → show payment pending spinner or bundle gate
   if (!hasBundle && !isPreview) {
+    if (unlocked === '1') {
+      return (
+        <div className="max-w-2xl mx-auto px-4 py-16">
+          <PaymentPending />
+        </div>
+      )
+    }
     return (
       <div className="max-w-2xl mx-auto px-4 py-16">
         <h1 className="text-3xl font-black text-white mb-2 text-center">Group Phase Bundle</h1>
