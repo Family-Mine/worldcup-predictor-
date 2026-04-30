@@ -5,13 +5,8 @@ import { createClient } from '@supabase/supabase-js'
 
 function db() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!key) {
-    console.error('[webhook] SUPABASE_SERVICE_ROLE_KEY is not set — falling back to anon key, upserts will fail due to RLS')
-  }
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    key ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  if (!key) throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set')
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key)
 }
 
 export async function POST(req: NextRequest) {
@@ -37,16 +32,28 @@ export async function POST(req: NextRequest) {
     const userId = session.metadata?.user_id
     const productType = session.metadata?.product_type ?? 'predictions'
 
-    if (userId && session.payment_status === 'paid') {
+    if (!userId) {
+      console.error('[webhook] missing user_id in metadata', session.id)
+      return NextResponse.json({ error: 'Missing user_id in metadata' }, { status: 400 })
+    }
+
+    if (session.payment_status !== 'paid') {
+      return NextResponse.json({ received: true })
+    }
+
+    try {
       const supabase = db()
+
+      const stripeCustomerId = (session.customer as string) ?? ''
+      const stripePaymentIntentId = (session.payment_intent as string) ?? ''
 
       if (productType === 'group_bundle') {
         const [subResult, addOnResult] = await Promise.all([
           supabase.from('subscriptions').upsert(
             {
               user_id: userId,
-              stripe_customer_id: session.customer as string,
-              stripe_payment_intent_id: session.payment_intent as string,
+              stripe_customer_id: stripeCustomerId,
+              stripe_payment_intent_id: stripePaymentIntentId,
               status: 'active',
               expires_at: '2026-08-01T00:00:00Z',
             },
@@ -56,26 +63,29 @@ export async function POST(req: NextRequest) {
             {
               user_id: userId,
               add_on: 'group_bundle',
-              stripe_payment_intent_id: session.payment_intent as string,
+              stripe_payment_intent_id: stripePaymentIntentId,
             },
             { onConflict: 'user_id,add_on' }
           ),
         ])
-        if (subResult.error) console.error('[webhook] subscriptions upsert failed:', subResult.error)
-        if (addOnResult.error) console.error('[webhook] user_add_ons upsert failed:', addOnResult.error)
+        if (subResult.error) throw new Error(`subscriptions upsert: ${subResult.error.message}`)
+        if (addOnResult.error) throw new Error(`user_add_ons upsert: ${addOnResult.error.message}`)
       } else {
         const { error: subError } = await supabase.from('subscriptions').upsert(
           {
             user_id: userId,
-            stripe_customer_id: session.customer as string,
-            stripe_payment_intent_id: session.payment_intent as string,
+            stripe_customer_id: stripeCustomerId,
+            stripe_payment_intent_id: stripePaymentIntentId,
             status: 'active',
             expires_at: '2026-08-01T00:00:00Z',
           },
           { onConflict: 'user_id' }
         )
-        if (subError) console.error('[webhook] subscriptions upsert failed:', subError)
+        if (subError) throw new Error(`subscriptions upsert: ${subError.message}`)
       }
+    } catch (err) {
+      console.error('[webhook] DB write failed:', err)
+      return NextResponse.json({ error: 'DB write failed' }, { status: 500 })
     }
   }
 
