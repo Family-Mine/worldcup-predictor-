@@ -5,6 +5,7 @@ import { hasActiveSubscription } from '@/lib/subscription'
 import { MatchHeader } from '@/components/matches/MatchHeader'
 import { TeamFlag } from '@/components/teams/TeamFlag'
 import { PaywallGate } from '@/components/predictions/PaywallGate'
+import { PaymentPending } from '@/components/predictions/PaymentPending'
 import type { MatchWithTeams } from '@/types/database'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -58,10 +59,13 @@ function ConfidenceBadge({ level }: { level: 'high' | 'medium' | 'low' }) {
 
 export default async function MatchPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; locale: string }>
+  searchParams: Promise<{ unlocked?: string }>
 }) {
   const { id, locale } = await params
+  const { unlocked } = await searchParams
   const supabase = getSupabaseServerClient()
   const prefix = `/${locale}`
 
@@ -156,7 +160,7 @@ export default async function MatchPage({
       {/* Paywall — shown when not paid */}
       {!isPaid && (
         <div className="mt-8">
-          <PaywallGate isLoggedIn={!!user} />
+          {unlocked === '1' ? <PaymentPending /> : <PaywallGate isLoggedIn={!!user} />}
         </div>
       )}
 
