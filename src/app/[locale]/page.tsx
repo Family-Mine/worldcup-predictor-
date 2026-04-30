@@ -26,10 +26,18 @@ export default function LandingPage({ params: { locale } }: { params: { locale: 
     { emoji: '📈', title: t('how_step_3_title'), desc: t('how_step_3_desc') },
   ]
 
-  const pricingBullets = [
-    t('pricing_bullet_1'),
-    t('pricing_bullet_2'),
-    t('pricing_bullet_3'),
+  const basicBullets = [
+    t('tier_basic_bullet_1'),
+    t('tier_basic_bullet_2'),
+    t('tier_basic_bullet_3'),
+  ]
+
+  const bundleBullets = [
+    t('tier_bundle_bullet_1'),
+    t('tier_bundle_bullet_2'),
+    t('tier_bundle_bullet_3'),
+    t('tier_bundle_bullet_4'),
+    t('tier_bundle_bullet_5'),
   ]
 
   return (
@@ -57,7 +65,12 @@ export default function LandingPage({ params: { locale } }: { params: { locale: 
           >
             {t('cta_explore')}
           </Link>
-          <UnlockButton label={t('cta_unlock')} locale={locale} />
+          <a
+            href="#pricing"
+            className="px-8 py-4 bg-fifa-green text-white rounded-xl font-bold hover:bg-green-500 transition-colors text-center"
+          >
+            {t('cta_see_plans')}
+          </a>
         </div>
 
         {/* Countdown */}
@@ -108,24 +121,88 @@ export default function LandingPage({ params: { locale } }: { params: { locale: 
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="max-w-md mx-auto px-4 py-16 border-t border-surface-border text-center">
-        <h2 className="text-2xl font-black text-white mb-2">{t('pricing_title')}</h2>
-        <p className="text-slate-400 text-sm mb-8">{t('pricing_desc')}</p>
-        <div className="bg-surface-card border border-fifa-gold/30 rounded-2xl p-8">
-          <div className="text-5xl font-black text-fifa-gold mb-1">$4.99</div>
-          <p className="text-slate-500 text-sm mb-6">{t('pricing_one_time')}</p>
-          <ul className="text-left space-y-3 mb-8">
-            {pricingBullets.map((bullet) => (
-              <li key={bullet} className="flex items-center gap-2 text-sm text-slate-300">
-                <span className="text-fifa-green font-bold">✓</span>
-                {bullet}
-              </li>
-            ))}
-          </ul>
-          <UnlockButton label={t('cta_unlock')} locale={locale} />
-          <p className="text-xs text-slate-600 mt-4">{t('pricing_valid')}</p>
+      {/* Pricing — two tiers side by side */}
+      <section id="pricing" className="scroll-mt-24 max-w-5xl mx-auto px-4 py-16 border-t border-surface-border">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl md:text-4xl font-black text-white mb-3">{t('pricing_title')}</h2>
+          <p className="text-slate-400 text-base">{t('pricing_desc')}</p>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 items-stretch">
+          {/* Basic — $4.99 */}
+          <div className="bg-surface-card border border-surface-border rounded-2xl p-7 flex flex-col">
+            <div className="mb-6">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">
+                {t('tier_basic_label')}
+              </p>
+              <h3 className="text-2xl font-black text-white mb-2">{t('tier_basic_title')}</h3>
+              <p className="text-slate-400 text-sm">{t('tier_basic_desc')}</p>
+            </div>
+
+            <div className="flex items-baseline gap-1 mb-6">
+              <span className="text-5xl font-black text-white">$4.99</span>
+              <span className="text-slate-500 text-sm">{t('pricing_one_time')}</span>
+            </div>
+
+            <ul className="space-y-3 mb-8 flex-1">
+              {basicBullets.map((bullet) => (
+                <li key={bullet} className="flex items-start gap-2 text-sm text-slate-300">
+                  <span className="text-slate-500 font-bold mt-0.5">·</span>
+                  <span>{bullet}</span>
+                </li>
+              ))}
+            </ul>
+
+            <UnlockButton
+              label={t('tier_basic_cta')}
+              locale={locale}
+              product="predictions"
+              variant="secondary"
+              className="w-full px-6 py-3 rounded-xl font-bold transition-colors disabled:opacity-60 bg-surface border border-surface-border text-white hover:border-slate-400"
+            />
+          </div>
+
+          {/* Bundle — $9.99 (highlighted as best value) */}
+          <div className="relative bg-gradient-to-br from-fifa-gold/10 via-surface-card to-surface-card border-2 border-fifa-gold rounded-2xl p-7 flex flex-col shadow-[0_0_40px_rgba(234,179,8,0.15)]">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-fifa-gold text-black rounded-full text-xs font-black uppercase tracking-widest whitespace-nowrap">
+              {t('tier_bundle_badge')}
+            </div>
+
+            <div className="mb-6 mt-2">
+              <p className="text-xs font-semibold uppercase tracking-widest text-fifa-gold mb-3">
+                {t('tier_bundle_label')}
+              </p>
+              <h3 className="text-2xl font-black text-white mb-2">{t('tier_bundle_title')}</h3>
+              <p className="text-slate-300 text-sm">{t('tier_bundle_desc')}</p>
+            </div>
+
+            <div className="flex items-baseline gap-2 mb-6">
+              <span className="text-5xl font-black text-fifa-gold">$9.99</span>
+              <span className="text-slate-400 text-sm">{t('pricing_one_time')}</span>
+              <span className="ml-auto text-xs text-fifa-gold font-bold">
+                {t('tier_bundle_save')}
+              </span>
+            </div>
+
+            <ul className="space-y-3 mb-8 flex-1">
+              {bundleBullets.map((bullet) => (
+                <li key={bullet} className="flex items-start gap-2 text-sm text-white">
+                  <span className="text-fifa-gold font-bold mt-0.5">✓</span>
+                  <span>{bullet}</span>
+                </li>
+              ))}
+            </ul>
+
+            <UnlockButton
+              label={t('tier_bundle_cta')}
+              locale={locale}
+              product="group_bundle"
+              className="w-full px-6 py-3 rounded-xl font-bold transition-colors disabled:opacity-60 bg-fifa-green text-white hover:bg-green-500"
+            />
+          </div>
+        </div>
+
+        <p className="text-center text-xs text-slate-600 mt-6">{t('pricing_valid')}</p>
       </section>
 
       {/* Pools teaser */}

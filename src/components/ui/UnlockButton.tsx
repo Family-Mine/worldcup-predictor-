@@ -3,12 +3,23 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+type Product = 'predictions' | 'group_bundle'
+
 interface UnlockButtonProps {
   label: string
   locale: string
+  product?: Product
+  variant?: 'primary' | 'secondary'
+  className?: string
 }
 
-export function UnlockButton({ label, locale }: UnlockButtonProps) {
+export function UnlockButton({
+  label,
+  locale,
+  product = 'predictions',
+  variant = 'primary',
+  className,
+}: UnlockButtonProps) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -19,7 +30,7 @@ export function UnlockButton({ label, locale }: UnlockButtonProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          product: 'predictions',
+          product,
           returnUrl: `${window.location.origin}/${locale}`,
         }),
       })
@@ -38,11 +49,17 @@ export function UnlockButton({ label, locale }: UnlockButtonProps) {
     }
   }
 
+  const baseStyles = 'rounded-xl font-bold transition-colors disabled:opacity-60'
+  const variantStyles =
+    variant === 'primary'
+      ? 'bg-fifa-green text-white hover:bg-green-500'
+      : 'bg-surface border border-surface-border text-white hover:border-slate-500'
+
   return (
     <button
       onClick={handleClick}
       disabled={loading}
-      className="px-8 py-4 bg-fifa-green text-white rounded-xl font-bold hover:bg-green-500 transition-colors disabled:opacity-60"
+      className={className ?? `px-8 py-4 ${baseStyles} ${variantStyles}`}
     >
       {loading ? '...' : label}
     </button>
