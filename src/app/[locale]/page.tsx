@@ -1,17 +1,30 @@
 // src/app/[locale]/page.tsx
-import { useTranslations } from 'next-intl'
-import { setRequestLocale } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 import Link from 'next/link'
 import { CountdownTimer } from '@/components/ui/CountdownTimer'
 import { UnlockButton } from '@/components/ui/UnlockButton'
+import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { hasActiveSubscription, hasGroupBundle } from '@/lib/subscription'
 
 const WORLD_CUP_KICKOFF = '2026-06-11T18:00:00Z'
 
-export default function LandingPage({ params: { locale } }: { params: { locale: string } }) {
+export const dynamic = 'force-dynamic'
+
+export default async function LandingPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale)
-  const t = useTranslations('landing')
-  const tNav = useTranslations('nav')
+  const t = await getTranslations({ locale, namespace: 'landing' })
+  const tNav = await getTranslations({ locale, namespace: 'nav' })
   const prefix = `/${locale}`
+
+  const supabase = getSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const [hasBundle, hasSub] = user
+    ? await Promise.all([
+        hasGroupBundle(supabase, user.id),
+        hasActiveSubscription(supabase, user.id),
+      ])
+    : [false, false]
+  const hasBasicOnly = hasSub && !hasBundle
 
   const features = [
     { emoji: '🤖', title: t('feature_ai_title'), desc: t('feature_ai_desc') },
@@ -65,12 +78,21 @@ export default function LandingPage({ params: { locale } }: { params: { locale: 
           >
             {t('cta_explore')}
           </Link>
-          <a
-            href="#pricing"
-            className="px-8 py-4 bg-fifa-green text-white rounded-xl font-bold hover:bg-green-500 transition-colors text-center"
-          >
-            {t('cta_see_plans')}
-          </a>
+          {hasBundle ? (
+            <Link
+              href={`${prefix}/predictions/group-phase`}
+              className="px-8 py-4 bg-fifa-green text-white rounded-xl font-bold hover:bg-green-500 transition-colors text-center"
+            >
+              {t('cta_view_predictions')}
+            </Link>
+          ) : (
+            <a
+              href="#pricing"
+              className="px-8 py-4 bg-fifa-green text-white rounded-xl font-bold hover:bg-green-500 transition-colors text-center"
+            >
+              {t('cta_see_plans')}
+            </a>
+          )}
         </div>
 
         {/* Countdown */}
@@ -122,15 +144,17 @@ export default function LandingPage({ params: { locale } }: { params: { locale: 
         </div>
       </section>
 
-      {/* Pricing — two tiers side by side */}
+      {/* Pricing — hidden once user has Bundle */}
+      {!hasBundle && (
       <section id="pricing" className="scroll-mt-24 max-w-5xl mx-auto px-4 py-16 border-t border-surface-border">
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-black text-white mb-3">{t('pricing_title')}</h2>
           <p className="text-slate-400 text-base">{t('pricing_desc')}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 items-stretch">
-          {/* Basic — $4.99 */}
+        <div className={hasBasicOnly ? 'max-w-md mx-auto' : 'grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 items-stretch'}>
+          {/* Basic — $4.99 (hidden if user already has Basic) */}
+          {!hasBasicOnly && (
           <div className="bg-surface-card border border-surface-border rounded-2xl p-7 flex flex-col">
             <div className="mb-6">
               <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">
@@ -162,6 +186,7 @@ export default function LandingPage({ params: { locale } }: { params: { locale: 
               className="w-full px-6 py-3 rounded-xl font-bold transition-colors disabled:opacity-60 bg-surface border border-surface-border text-white hover:border-slate-400"
             />
           </div>
+          )}
 
           {/* Bundle — $9.99 (highlighted as best value) */}
           <div className="relative bg-gradient-to-br from-fifa-gold/10 via-surface-card to-surface-card border-2 border-fifa-gold rounded-2xl p-7 flex flex-col shadow-[0_0_40px_rgba(234,179,8,0.15)]">
@@ -205,6 +230,7 @@ export default function LandingPage({ params: { locale } }: { params: { locale: 
 
         <p className="text-center text-xs text-slate-600 mt-6">{t('pricing_valid')}</p>
       </section>
+      )}
 
       {/* Pools teaser */}
       <section className="max-w-4xl mx-auto px-4 py-16 border-t border-surface-border">
