@@ -34,7 +34,9 @@ export default async function LandingPage({ params: { locale } }: { params: { lo
   ]
 
   const howSteps = [
-    { emoji: '🔓', title: t('how_step_1_title'), desc: t('how_step_1_desc') },
+    hasSub
+      ? { emoji: '✅', title: t('how_step_1_paid_title'), desc: t('how_step_1_paid_desc') }
+      : { emoji: '🔓', title: t('how_step_1_title'), desc: t('how_step_1_desc') },
     { emoji: '👥', title: t('how_step_2_title'), desc: t('how_step_2_desc') },
     { emoji: '📈', title: t('how_step_3_title'), desc: t('how_step_3_desc') },
   ]
