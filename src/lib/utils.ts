@@ -4,6 +4,8 @@ export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ')
 }
 
+// timeZone: 'UTC' keeps server (Vercel UTC) and client output in sync,
+// avoiding React hydration mismatches when the browser is in a different TZ.
 export function formatMatchDate(isoString: string): string {
   return new Date(isoString).toLocaleDateString('en-US', {
     month: 'short',
@@ -11,6 +13,7 @@ export function formatMatchDate(isoString: string): string {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'UTC',
     timeZoneName: 'short',
   })
 }
@@ -19,6 +22,7 @@ export function formatMatchDateShort(isoString: string): string {
   return new Date(isoString).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
+    timeZone: 'UTC',
   })
 }
 

@@ -12,11 +12,32 @@ export function InviteCodeBanner({ inviteCode, inviteUrl }: InviteCodeBannerProp
   const t = useTranslations('pools')
   const [copied, setCopied] = useState(false)
 
-  function copyLink() {
-    navigator.clipboard.writeText(inviteUrl).then(() => {
+  async function copyLink() {
+    let ok = false
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(inviteUrl)
+        ok = true
+      }
+    } catch {
+      // fall through to legacy path
+    }
+    if (!ok) {
+      // Fallback for iOS Safari < 13.4 and non-secure contexts
+      const ta = document.createElement('textarea')
+      ta.value = inviteUrl
+      ta.setAttribute('readonly', '')
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.select()
+      try { ok = document.execCommand('copy') } catch { /* noop */ }
+      document.body.removeChild(ta)
+    }
+    if (ok) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    })
+    }
   }
 
   return (

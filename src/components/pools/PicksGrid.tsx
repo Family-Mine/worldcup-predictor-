@@ -142,6 +142,7 @@ export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
               const hasPick = s.home !== '' && s.away !== ''
               const kickoff = new Date(match.scheduled_at).toLocaleDateString('es', {
                 month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                timeZone: 'UTC',
               })
 
               return (
