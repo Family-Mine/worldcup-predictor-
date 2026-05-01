@@ -41,9 +41,9 @@ export function MobileMenu({ user }: MobileMenuProps) {
             type="button"
             aria-label="Close menu"
             onClick={() => setOpen(false)}
-            className="fixed inset-0 top-16 z-40 bg-black/30"
+            className="fixed inset-0 top-[calc(env(safe-area-inset-top)+4rem)] z-40 bg-black/30"
           />
-          <div className="fixed top-16 left-0 right-0 bg-surface border-b border-surface-border z-50 px-4 py-4 flex flex-col gap-1">
+          <div className="fixed top-[calc(env(safe-area-inset-top)+4rem)] left-0 right-0 bg-surface border-b border-surface-border z-50 px-4 py-4 flex flex-col gap-1">
           <Link
             href={`${prefix}/groups`}
             className="text-slate-300 hover:text-white text-sm py-3 border-b border-surface-border/50 transition-colors"

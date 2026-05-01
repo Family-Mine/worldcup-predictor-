@@ -17,7 +17,7 @@ export function Navbar({ user }: NavbarProps) {
   const prefix = `/${locale}`
 
   return (
-    <nav className="border-b border-surface-border bg-surface/90 backdrop-blur-sm sticky top-0 z-50">
+    <nav className="border-b border-surface-border bg-surface/90 backdrop-blur-sm sticky top-0 z-50 pt-[env(safe-area-inset-top)]">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link href={`${prefix}/`}>
           <LogoMark />
