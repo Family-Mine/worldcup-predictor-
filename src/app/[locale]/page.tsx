@@ -95,7 +95,8 @@ export default function LandingPage({ params: { locale } }: { params: { locale: 
         <h2 className="text-2xl font-black text-white text-center mb-10">{t('features_title')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {features.map(({ emoji, title, desc }) => (
-            <div key={title} className="bg-surface-card border border-surface-border rounded-xl p-5">
+            <div key={title} className="relative overflow-hidden bg-surface-card border border-surface-border rounded-xl p-5">
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-fifa-gold to-yellow-700" />
               <div className="text-3xl mb-3">{emoji}</div>
               <h3 className="text-white font-bold mb-1">{title}</h3>
               <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
@@ -207,7 +208,8 @@ export default function LandingPage({ params: { locale } }: { params: { locale: 
 
       {/* Pools teaser */}
       <section className="max-w-4xl mx-auto px-4 py-16 border-t border-surface-border">
-        <div className="bg-surface-card border border-surface-border rounded-2xl p-8 flex flex-col sm:flex-row items-center gap-6">
+        <div className="relative overflow-hidden bg-surface-card border border-surface-border rounded-2xl p-8 flex flex-col sm:flex-row items-center gap-6">
+          <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-fifa-gold to-yellow-700" />
           <div className="text-5xl">🏆</div>
           <div className="flex-1 text-center sm:text-left">
             <h2 className="text-xl font-black text-white mb-2">{t('pools_teaser_title')}</h2>
