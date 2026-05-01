@@ -28,7 +28,7 @@ export function GroupBundleGate({ isLoggedIn }: GroupBundleGateProps) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         product: 'group_bundle',
-        returnUrl: window.location.href,
+        returnUrl: `${window.location.origin}/${locale}/payment-success`,
       }),
     })
 

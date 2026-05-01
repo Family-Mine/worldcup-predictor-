@@ -23,7 +23,7 @@ export function PaywallGate({ isLoggedIn }: PaywallGateProps) {
     const res = await fetch('/api/stripe/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ returnUrl: window.location.href }),
+      body: JSON.stringify({ returnUrl: `${window.location.origin}/${locale}/payment-success` }),
     })
     const data = await res.json()
     if (data.url) {

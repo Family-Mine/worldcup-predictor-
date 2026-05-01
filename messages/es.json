@@ -199,5 +199,24 @@
     "invite_step_2": "Predice el marcador de cada partido del Mundial",
     "invite_step_3": "Elige quién será el máximo goleador del torneo",
     "invite_step_4": "Sigue la tabla de posiciones y compite por el primer lugar"
+  },
+  "paymentSuccess": {
+    "title": "¡Pago exitoso!",
+    "subtitle_basic": "Tu acceso está listo. Elige cómo quieres empezar:",
+    "subtitle_bundle": "Desbloqueaste el Paquete completo. Elige por dónde empezar:",
+    "cta_bundle_label": "Paquete · Recomendado",
+    "cta_bundle_title": "Ver todas las predicciones de fase de grupos",
+    "cta_bundle_desc": "Los 48 partidos de grupos en una sola pantalla con probabilidades y marcadores.",
+    "cta_basic_label": "Partido por partido",
+    "cta_basic_title": "Ver partidos uno por uno",
+    "cta_basic_desc": "Abre cualquier partido para ver el análisis completo de IA.",
+    "cta_pools_label": "Compite",
+    "cta_pools_title": "Crear o unirte a una quinela",
+    "cta_pools_desc": "Predice marcadores con tus amigos y sigue la tabla en vivo.",
+    "receipt_note": "Te enviamos el recibo a tu correo."
+  },
+  "groupPhase": {
+    "loading_title": "Calculando predicciones…",
+    "loading_desc": "Procesando probabilidades para los 48 partidos de la fase de grupos"
   }
 }

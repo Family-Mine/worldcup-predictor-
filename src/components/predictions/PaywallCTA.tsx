@@ -20,7 +20,7 @@ export function PaywallCTA() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           product: 'predictions',
-          returnUrl: `${window.location.origin}/${locale}`,
+          returnUrl: `${window.location.origin}/${locale}/payment-success`,
         }),
       })
       if (res.status === 401) {

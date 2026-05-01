@@ -33,7 +33,7 @@ export function UnlockButton({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           product,
-          returnUrl: `${window.location.origin}/${locale}`,
+          returnUrl: `${window.location.origin}/${locale}/payment-success`,
         }),
       })
 

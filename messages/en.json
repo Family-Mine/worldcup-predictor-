@@ -199,5 +199,24 @@
     "invite_step_2": "Predict the score for every World Cup match",
     "invite_step_3": "Pick who will be the tournament's top goal scorer",
     "invite_step_4": "Follow the live leaderboard and compete for the top spot"
+  },
+  "paymentSuccess": {
+    "title": "Payment successful!",
+    "subtitle_basic": "Your access is ready. Pick how you want to start using your predictions:",
+    "subtitle_bundle": "You unlocked the full Bundle. Pick how you want to start:",
+    "cta_bundle_label": "Bundle · Recommended",
+    "cta_bundle_title": "See all group phase predictions",
+    "cta_bundle_desc": "Every group stage match in one screen with probabilities and predicted scores.",
+    "cta_basic_label": "Match by match",
+    "cta_basic_title": "Browse matches one by one",
+    "cta_basic_desc": "Open any match for the full AI breakdown and analysis.",
+    "cta_pools_label": "Compete",
+    "cta_pools_title": "Create or join a pool",
+    "cta_pools_desc": "Predict scores with friends and follow the live leaderboard.",
+    "receipt_note": "A receipt has been sent to your email."
+  },
+  "groupPhase": {
+    "loading_title": "Calculating predictions…",
+    "loading_desc": "Crunching probabilities for all 48 group stage matches"
   }
 }
