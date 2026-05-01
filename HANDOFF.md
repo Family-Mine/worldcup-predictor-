@@ -1,5 +1,66 @@
 # WC26 Predictor — Handoff
 
+## ⚡ Estado al cierre 2026-04-30 (sesión nocturna)
+
+App estable en producción. Pago end-to-end verificado en desktop y móvil con cuenta real.
+
+### Qué quedó hecho esta sesión (8 commits pusheados)
+
+**Pago — bug raíz resuelto:**
+- `session.customer` venía null en checkouts sin Customer object → upsert a `subscriptions.stripe_customer_id` (NOT NULL) devolvía 400 → webhook devolvía 200 silenciosamente → suscripción nunca se escribía
+- Fix: type guards + coalesce a `''` + `customer_creation: 'always'` en checkout
+- Webhook ahora devuelve 500 en errores DB → Stripe reintenta + visible en dashboard
+- `STRIPE_WEBHOOK_SECRET` y `SUPABASE_SERVICE_ROLE_KEY` ahora son required (no fallback silencioso)
+
+**Hardening adicional:**
+- Open redirect en checkout: `returnUrl` validado same-origin
+- CRON `/api/sync-results` fail-closed si falta `CRON_SECRET`
+- `expires_at` movido a env var `SUBSCRIPTION_EXPIRES_AT` (default `2026-10-01`)
+- Idempotencia: tabla `processed_webhook_events` (PRIMARY KEY en `event_id`)
+- Handler `charge.refunded` → status='refunded' + delete `user_add_ons` row
+- Webhook subscrito a `charge.refunded` en Stripe
+- `hasGroupBundle` ahora valida subscription activa (refund revoca acceso)
+- Server actions de pools (`createPool`, `joinPool`, `submitPick`, `submitSpecialPick`) requieren suscripción activa
+- `next.config.mjs`: wildcard `*.supabase.co` → host exacto `hhdrvkilwtuqftabulov.supabase.co` (cierra SSRF)
+- `/api/auth/recovery` reescrito con patrón inline (cookies a la response, no al request store) → reset password ya funciona
+
+**UX nuevas:**
+- Landing redesign: dual pricing $4.99 (Basic) + $9.99 (Bundle, "Best value", borde dorado, glow)
+- Hero CTA "Ver planes" scrollea a `#pricing` (antes auto-cobraba $4.99)
+- Página `/payment-success` con checkmark verde + 3 CTAs (Group Phase / Match-by-match / Pools)
+- Página `/welcome` post-OAuth con "¡Bienvenido!" + 2 CTAs (Ver planes / Explorar grupos)
+- `/predictions/group-phase/loading.tsx` skeleton con spinner "calculando predicciones" (la página tarda ~5-7s)
+- `UnlockButton` muestra error si checkout falla (antes era silent)
+- Login + register: Suspense boundaries (no más blank screen mobile lento) + i18n completo (en + es)
+
+**Mobile fixes:**
+- `font-size: 16px` global en inputs (no más auto-zoom iOS)
+- Hamburger button `p-2` → `p-2.5` (40px → 44px tap target iOS)
+- Mobile menu `absolute` → `fixed` para escapar stacking context (no más clipping iOS)
+- Backdrop oscuro click-to-close en menú hamburguesa
+- `SocialAuthButtons` reset loading tras 1.5s (botones no quedan disabled)
+
+**Reset total realizado:**
+- Todos los users de Supabase borrados (auth + tablas de app)
+- Todos los pagos en Stripe refundeados
+- "Guest" customers en Stripe son históricos inofensivos
+
+### Pendientes deferred (no bloquean, polish para post-launch)
+- `safe-area-inset-top/bottom` en `globals.css` (notch iPhone)
+- Hardcoded date locale en `src/lib/utils.ts` y `PicksGrid` (causa hydration mismatch)
+- Clipboard fallback en `InviteCodeBanner` (iOS Safari viejo)
+- PicksGrid: debounce de saves concurrentes en mobile
+- Centralizar auth check en middleware (actualmente per-page)
+- App móvil React Native + Expo (10 prompts en `~/.claude/projects/.../memory/wc26_mobile_prompts.md`)
+
+### Acceso CLI persistente
+- Stripe live restricted key `claude-cli-iMac-2026` (events:read + webhooks:write)
+- Para usar en futura sesión: `export STRIPE_API_KEY="rk_live_51TJ2FQDDvw3X1R0v..."` (la key completa está en sesión actual; agregarla a `~/.zshrc` cuando puedas)
+- Vercel CLI autenticado como `ljaramillo-ui`
+- Supabase MCP autenticado (acceso SQL completo a project `hhdrvkilwtuqftabulov`)
+
+---
+
 ## Stack
 Next.js 14.2 · TypeScript · Tailwind CSS · Supabase (PostgreSQL + RLS) · Stripe · next-intl
 
@@ -50,8 +111,8 @@ Migración knockout: `supabase/migrations/knockout_phase.sql` — ✅ aplicada e
 - Al comprar `group_bundle`, el webhook otorga AMBAS: `subscriptions` + `user_add_ons`
 - Webhook: `src/app/api/stripe/webhook/route.ts`
 - Checkout: `src/app/api/stripe/checkout/route.ts`
-- **Stripe CLI instalado** para testing local de webhooks
-- ⚠️ Actualmente usando `sk_test_...` — pendiente cambiar a `sk_live_...` en producción
+- **Stripe CLI instalado** + autenticado (live mode con restricted key)
+- ✅ Producción usa `sk_live_...` — Stripe live ya activo desde 2026-04-27
 
 ## Módulo de quinelas — Lógica de puntos
 - Marcador exacto = 3 pts
