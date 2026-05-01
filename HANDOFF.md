@@ -1,10 +1,10 @@
 # WC26 Predictor — Handoff
 
-## ⚡ Estado al cierre 2026-05-01 (sesión polish UX)
+## ⚡ Estado al cierre 2026-05-01 (sesión polish UX + recta final)
 
-App estable en producción. Foco de la sesión: UX para usuarios pagos + finalizar rediseño visual.
+App estable en producción. Foco: UX para usuarios pagos + finalizar rediseño visual + cerrar pendientes deferred + revenue leak en mobile.
 
-### Qué quedó hecho esta sesión (4 commits pusheados)
+### Qué quedó hecho esta sesión (8 commits pusheados — 7 web + 1 mobile)
 
 **Rediseño visual finalizado:**
 - `028683d` — Línea dorada (gradient `from-fifa-gold to-yellow-700`) arriba de las 4 features cards y la pools teaser card en home
@@ -17,16 +17,24 @@ App estable en producción. Foco de la sesión: UX para usuarios pagos + finaliz
 - Implementación: landing page convertida a `async` server component + `await getTranslations` + `getSupabaseServerClient().auth.getUser()` + `hasGroupBundle()` / `hasActiveSubscription()`. Marcada `dynamic = 'force-dynamic'`
 - 3 keys i18n nuevas en `messages/{en,es}.json`: `cta_view_predictions`, `how_step_1_paid_title`, `how_step_1_paid_desc`
 
-**Mobile app (Expo, `~/Desktop/wc26-mobile`):** sin cambios — el paywall banner en `app/(tabs)/predictions.tsx:82` ya se oculta automáticamente cuando `isPaid === true`. No hay sección de pricing en mobile (cobros redirigen a wc26predictor.com).
+**Hardening iOS / hydration / clipboard (cierra deferreds del HANDOFF previo):**
+- `98013c5` — `viewport-fit: cover` en `layout.tsx` + `pt-[env(safe-area-inset-top)]` en Navbar + `top-[calc(env(safe-area-inset-top)+4rem)]` en MobileMenu + `pb-[max(2rem,env(safe-area-inset-bottom))]` en Footer (notch + home indicator iPhone)
+- `d5165cc` — `timeZone: 'UTC'` en `formatMatchDate`, `formatMatchDateShort`, y kickoff label en PicksGrid (cierra hydration mismatch server vs cliente). Clipboard fallback en `InviteCodeBanner`: prueba `navigator.clipboard.writeText` con try/catch y cae a `<textarea> + execCommand('copy')` para iOS Safari < 13.4 / contextos no-secure
+- `75a89f4` — Debounce 400ms por match en PicksGrid + version counter para descartar respuestas stale (evita saves perdidos cuando el usuario tap-tap entre inputs en mobile con red lenta). Cleanup de timers en unmount
+
+**Mobile app — revenue leak cerrado (`~/Desktop/wc26-mobile` `2f073ba`):**
+- Antes: cualquier sub activa (incluido Basic $4.99) desbloqueaba la vista de fase de grupos en la pantalla "Predicciones IA" — esa vista vale $9.99 (Bundle) en la web → leak ~$5/usuario que use ambas plataformas
+- Ahora: chequea `user_add_ons` con `add_on='group_bundle'` además de `subscriptions.status='active'`. 3 estados:
+  - Sin sub → banner $4.99 (igual que antes)
+  - Basic only → nuevo banner "🔓 Vista de grupos — Upgrade $9.99 — Ya tienes Basic"
+  - Bundle → desbloqueado
+- Ambos paywalls deep-linkean a wc26predictor.com
 
 ### Pendientes vivos
-- `safe-area-inset-top/bottom` en `globals.css` (notch iPhone)
-- Hydration mismatch por `toLocaleDateString` con locale hardcodeado en `src/lib/utils.ts` y `PicksGrid`
-- Clipboard fallback en `InviteCodeBanner` (iOS Safari viejo)
-- PicksGrid: debounce de saves concurrentes en mobile
-- Centralizar auth check en middleware (actualmente per-page)
-- Diferenciar Bundle vs Basic en mobile app (actualmente cualquier sub activa desbloquea todo)
-- App móvil WC26 — Expo SDK 54 ya scaffolded en `~/Desktop/wc26-mobile`; HANDOFF propio
+- Centralizar auth en middleware (deuda técnica, NO tocar pre-WC26 — riesgo de romper auth en producción a 40 días del kickoff)
+- App móvil WC26 — Expo SDK 54 con 4 tabs ya implementadas, HANDOFF propio en `~/Desktop/wc26-mobile`. Pendiente: build EAS + submit a App Store / Play Store
+- Smoke test del flujo de pago end-to-end con tarjeta real post-cambios de hoy
+- Runbook mini de incidentes para el día del partido (Stripe dashboard, logs Vercel, queries Supabase)
 
 ---
 
