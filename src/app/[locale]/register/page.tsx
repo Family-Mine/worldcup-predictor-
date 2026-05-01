@@ -48,13 +48,22 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="w-full max-w-sm text-center">
-          <div className="text-5xl mb-4">✉️</div>
-          <h2 className="text-2xl font-bold text-white mb-2">Check your email</h2>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-fifa-green/15 border-2 border-fifa-green mb-4">
+            <span className="text-3xl">✉️</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">
+            {locale === 'es' ? '¡Revisa tu correo!' : 'Check your email'}
+          </h2>
           <p className="text-slate-400 text-sm mb-6">
-            We sent a confirmation link to your inbox. Click it to activate your account.
+            {locale === 'es'
+              ? 'Te enviamos un link de confirmación. Haz click para activar tu cuenta.'
+              : 'We sent a confirmation link to your inbox. Click it to activate your account.'}
           </p>
-          <Link href={`${prefix}/login`} className="text-fifa-gold hover:underline text-sm">
-            Back to login
+          <Link
+            href={`${prefix}/login`}
+            className="text-fifa-gold hover:underline text-sm"
+          >
+            {locale === 'es' ? 'Volver al login' : 'Back to login'}
           </Link>
         </div>
       </div>

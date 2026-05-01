@@ -19,7 +19,7 @@ export function MobileMenu({ user }: MobileMenuProps) {
     <div className="sm:hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="p-2 text-slate-300 hover:text-white transition-colors"
+        className="p-2.5 text-slate-300 hover:text-white transition-colors"
         aria-label="Toggle menu"
         aria-expanded={open}
       >
@@ -35,7 +35,15 @@ export function MobileMenu({ user }: MobileMenuProps) {
       </button>
 
       {open && (
-        <div className="absolute top-16 left-0 right-0 bg-surface border-b border-surface-border z-50 px-4 py-4 flex flex-col gap-1">
+        <>
+          {/* Click-outside backdrop */}
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 top-16 z-40 bg-black/30"
+          />
+          <div className="fixed top-16 left-0 right-0 bg-surface border-b border-surface-border z-50 px-4 py-4 flex flex-col gap-1">
           <Link
             href={`${prefix}/groups`}
             className="text-slate-300 hover:text-white text-sm py-3 border-b border-surface-border/50 transition-colors"
@@ -94,6 +102,7 @@ export function MobileMenu({ user }: MobileMenuProps) {
             )}
           </div>
         </div>
+        </>
       )}
     </div>
   )

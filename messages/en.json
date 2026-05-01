@@ -218,5 +218,16 @@
   "groupPhase": {
     "loading_title": "Calculating predictions…",
     "loading_desc": "Crunching probabilities for all 48 group stage matches"
+  },
+  "welcome": {
+    "title": "Welcome to WC26!",
+    "subtitle": "Your account is ready. Pick a plan to unlock predictions, or browse the groups for free.",
+    "cta_plans_label": "Get started",
+    "cta_plans_title": "See plans — Basic & Bundle",
+    "cta_plans_desc": "Pick how you want to use predictions: match-by-match or all at once.",
+    "cta_explore_label": "Free preview",
+    "cta_explore_title": "Browse groups",
+    "cta_explore_desc": "Explore the World Cup brackets without unlocking anything yet.",
+    "skip": "Skip and go to home"
   }
 }

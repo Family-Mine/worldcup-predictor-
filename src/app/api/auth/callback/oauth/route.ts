@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/${locale}/login?oauth_error=${encodeURIComponent(error)}`)
   }
 
-  const response = NextResponse.redirect(`${origin}/${locale}`)
+  const response = NextResponse.redirect(`${origin}/${locale}/welcome`)
 
   if (code) {
     const supabase = createServerClient(

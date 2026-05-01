@@ -218,5 +218,16 @@
   "groupPhase": {
     "loading_title": "Calculando predicciones…",
     "loading_desc": "Procesando probabilidades para los 48 partidos de la fase de grupos"
+  },
+  "welcome": {
+    "title": "¡Bienvenido a WC26!",
+    "subtitle": "Tu cuenta está lista. Elige un plan para desbloquear predicciones, o explora los grupos gratis.",
+    "cta_plans_label": "Empieza aquí",
+    "cta_plans_title": "Ver planes — Básico y Paquete",
+    "cta_plans_desc": "Elige cómo quieres ver las predicciones: partido a partido o todas de una.",
+    "cta_explore_label": "Vista gratis",
+    "cta_explore_title": "Explorar grupos",
+    "cta_explore_desc": "Mira los grupos del Mundial sin desbloquear nada todavía.",
+    "skip": "Saltar e ir al inicio"
   }
 }
