@@ -1,5 +1,35 @@
 # WC26 Predictor — Handoff
 
+## ⚡ Estado al cierre 2026-05-01 (sesión polish UX)
+
+App estable en producción. Foco de la sesión: UX para usuarios pagos + finalizar rediseño visual.
+
+### Qué quedó hecho esta sesión (4 commits pusheados)
+
+**Rediseño visual finalizado:**
+- `028683d` — Línea dorada (gradient `from-fifa-gold to-yellow-700`) arriba de las 4 features cards y la pools teaser card en home
+- `4c38b44` — Línea dorada (sólido `border-t-2 border-t-fifa-gold`) arriba de Standings table en `/groups/[letter]` y AI Prediction + Head to Head cards en `/matches/[id]`. GroupCard y MatchCard ya la tenían
+- Nota: el HANDOFF previo decía "44 errores TS" — `tsc --noEmit` ya pasa limpio (exit 0)
+
+**UX condicional según estado de pago:**
+- `c040cd2` — Landing oculta sección de pricing entera para Bundle owners. Hero CTA cambia de "Ver planes" → "Ver predicciones" (linkea a `/predictions/group-phase`). Basic-only ven solo card Bundle centrada como upsell
+- `be53571` — "How it works" paso 1 ("🔓 Unlock predictions — One-time $4.99 payment") se reemplaza por "✅ Predicciones desbloqueadas — Tus 104 predicciones están listas. Explóralas por grupo o partido." cuando el user tiene subscription activa
+- Implementación: landing page convertida a `async` server component + `await getTranslations` + `getSupabaseServerClient().auth.getUser()` + `hasGroupBundle()` / `hasActiveSubscription()`. Marcada `dynamic = 'force-dynamic'`
+- 3 keys i18n nuevas en `messages/{en,es}.json`: `cta_view_predictions`, `how_step_1_paid_title`, `how_step_1_paid_desc`
+
+**Mobile app (Expo, `~/Desktop/wc26-mobile`):** sin cambios — el paywall banner en `app/(tabs)/predictions.tsx:82` ya se oculta automáticamente cuando `isPaid === true`. No hay sección de pricing en mobile (cobros redirigen a wc26predictor.com).
+
+### Pendientes vivos
+- `safe-area-inset-top/bottom` en `globals.css` (notch iPhone)
+- Hydration mismatch por `toLocaleDateString` con locale hardcodeado en `src/lib/utils.ts` y `PicksGrid`
+- Clipboard fallback en `InviteCodeBanner` (iOS Safari viejo)
+- PicksGrid: debounce de saves concurrentes en mobile
+- Centralizar auth check en middleware (actualmente per-page)
+- Diferenciar Bundle vs Basic en mobile app (actualmente cualquier sub activa desbloquea todo)
+- App móvil WC26 — Expo SDK 54 ya scaffolded en `~/Desktop/wc26-mobile`; HANDOFF propio
+
+---
+
 ## ⚡ Estado al cierre 2026-04-30 (sesión nocturna)
 
 App estable en producción. Pago end-to-end verificado en desktop y móvil con cuenta real.
@@ -143,52 +173,35 @@ Migración knockout: `supabase/migrations/knockout_phase.sql` — ✅ aplicada e
 
 ---
 
-## ✅ Completado — Rediseño visual (2026-04-08/10)
+## ✅ Completado — Rediseño visual (2026-04-08 → 2026-05-01)
 
-Todos los cambios mergeados a `main` pero **pendientes de commit y deploy**:
-
-### Cambios implementados
-1. **Tipografía** — Inter → Space Grotesk (`tailwind.config.ts` + `layout.tsx` + `globals.css`)
-2. **Token fifa-green** — `#006847` → `#16A34A` (verde FIFA más vivo)
-3. **Logo** — emoji ⚽ → diana SVG dorada (`LogoMark.tsx`); actualizado en Navbar, login, register
-4. **Botones CTA** — dorado → verde FIFA en 13 archivos (Navbar, home, pools, login, register, join, new, picks, special, PaywallCTA, PaywallGate, GroupBundleGate, SpecialPicksForm)
-5. **Leaderboard fila "tú"** — highlight dorado → verde (5 ocurrencias en PoolLeaderboard + special/page)
-6. **Fixes Next.js 16** — `await params` y `await cookies()` en pools/page, poolId/page, special/page, layout
-
-### Pendiente del rediseño
-- Línea dorada 2px arriba de cards en home hero y páginas de grupos/partidos (spec sección 4)
-  - Home hero → fácil, 1 div wrapper
-  - Groups/matches pages → esperar a limpiar los 44 errores TS primero
+1. **Tipografía** — Inter → Space Grotesk
+2. **Token fifa-green** — `#006847` → `#16A34A`
+3. **Logo** — emoji ⚽ → diana SVG dorada (`LogoMark.tsx`)
+4. **Botones CTA** — dorado → verde FIFA en 13 archivos
+5. **Leaderboard fila "tú"** — highlight dorado → verde
+6. **Línea dorada en cards** — 2026-05-01: home (features + pools teaser, gradient) + groups/matches (Standings, AI Prediction, Head to Head, sólido)
+7. **Fixes Next.js 16 parciales** — `await params` / `await cookies()` en pools/page, poolId/page, special/page, layout (otras pages siguen con params sync — proyecto sigue en Next 14.2)
 
 ---
 
-## Próximos pasos (en orden)
+## Próximos pasos sugeridos
 
-### 1. Commit + deploy del rediseño (inmediato)
-```bash
-git add -p   # revisar cambios
-git commit -m "feat: visual redesign — Space Grotesk, green CTA buttons, SVG logo, leaderboard green highlight"
-git push
-# Vercel despliega automáticamente desde main
-```
+### Pendientes deferred — polish iOS / hardening
+- `safe-area-inset-top/bottom` en `globals.css` (notch iPhone)
+- Hydration mismatch por `toLocaleDateString` con locale hardcodeado en `src/lib/utils.ts` y `PicksGrid`
+- Clipboard fallback en `InviteCodeBanner` (iOS Safari viejo)
+- PicksGrid: debounce de saves concurrentes en mobile
 
-### 2. ~~Stripe en producción~~ ✅ COMPLETO (2026-04-27)
-- sk_live + pk_live activos en Vercel
-- Webhook apuntando a wc26predictor.com, signing secret configurado
+### Refactors opcionales
+- Centralizar auth check en middleware (actualmente per-page)
+- Diferenciar Bundle vs Basic en mobile app
 
-### 3. Línea dorada en cards (diseño)
-- Home hero: agregar `<div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-fifa-gold to-yellow-700" />` al panel principal
-- Groups/matches: resolver 44 errores TS primero
-
-### 4. Cleanup TypeScript (44 errores preexistentes)
-- Principalmente en `matches/[id]/page.tsx` y páginas relacionadas
-- Causa: `home_team_id` / `away_team_id` nullable después de migración knockout
-- No bloquean la app pero sí bloquean `npm run build` limpio
-
-### 5. App mobile WC26
+### App mobile WC26
+- Expo SDK 54 ya scaffolded en `~/Desktop/wc26-mobile`
+- HANDOFF propio en ese repo
+- 4 tabs (Grupos, Predicciones, Quinelas, Perfil) implementados ✅
 - 10 prompts de arquitectura guardados en `~/.claude/projects/.../memory/wc26_mobile_prompts.md`
-- Stack confirmado: React Native + Expo
-- Ejecutar prompts en orden: 10 → 1 → 4 → 8 → 2 → 5 → 3 → 6 → 7 → 9
 
 ---
 
