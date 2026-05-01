@@ -1,6 +1,6 @@
 'use client'
 // src/components/pools/PicksGrid.tsx
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import { submitPick } from '@/app/actions/pools'
 import { isMatchLocked } from '@/lib/pools'
@@ -75,6 +75,21 @@ export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
     }
   }
   const [scores, setScores] = useState<ScoreMap>(initial)
+  const scoresRef = useRef(scores)
+  scoresRef.current = scores
+
+  // Debounce timers and a version counter per match so stale responses
+  // (e.g. user typed again before the previous save resolved on a slow mobile
+  // network) are ignored when they come back.
+  const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+  const saveVersion = useRef<Record<string, number>>({})
+
+  useEffect(() => {
+    const timers = saveTimers.current
+    return () => {
+      for (const id of Object.keys(timers)) clearTimeout(timers[id])
+    }
+  }, [])
 
   function update(matchId: string, side: 'home' | 'away', val: string) {
     setScores(prev => ({
@@ -83,8 +98,14 @@ export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
     }))
   }
 
+  function scheduleSave(match: MatchWithTeams) {
+    const id = match.id
+    if (saveTimers.current[id]) clearTimeout(saveTimers.current[id])
+    saveTimers.current[id] = setTimeout(() => save(match), 400)
+  }
+
   function save(match: MatchWithTeams) {
-    const s = scores[match.id]
+    const s = scoresRef.current[match.id]
     if (!s) return
     if (s.home === '' || s.away === '') return
     const home = parseInt(s.home, 10)
@@ -94,8 +115,13 @@ export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
       return
     }
 
+    const myVersion = (saveVersion.current[match.id] ?? 0) + 1
+    saveVersion.current[match.id] = myVersion
+
     startTransition(async () => {
       const result = await submitPick(poolId, match.id, home, away)
+      // Drop the response if a newer save was scheduled while this was in flight.
+      if (saveVersion.current[match.id] !== myVersion) return
       setScores(prev => ({
         ...prev,
         [match.id]: {
@@ -160,7 +186,7 @@ export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
                         maxLength={2}
                         value={s.home}
                         onChange={e => update(match.id, 'home', e.target.value.replace(/\D/g, ''))}
-                        onBlur={() => save(match)}
+                        onBlur={() => scheduleSave(match)}
                         disabled={locked}
                         placeholder="–"
                         className="w-10 h-10 text-center text-lg font-black bg-surface border border-surface-border rounded-lg text-white focus:border-fifa-gold focus:outline-none disabled:cursor-not-allowed placeholder-slate-600"
@@ -173,7 +199,7 @@ export function PicksGrid({ poolId, matches, existingPicks }: PicksGridProps) {
                         maxLength={2}
                         value={s.away}
                         onChange={e => update(match.id, 'away', e.target.value.replace(/\D/g, ''))}
-                        onBlur={() => save(match)}
+                        onBlur={() => scheduleSave(match)}
                         disabled={locked}
                         placeholder="–"
                         className="w-10 h-10 text-center text-lg font-black bg-surface border border-surface-border rounded-lg text-white focus:border-fifa-gold focus:outline-none disabled:cursor-not-allowed placeholder-slate-600"
