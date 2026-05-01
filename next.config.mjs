@@ -8,7 +8,7 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'flagcdn.com' },
-      { protocol: 'https', hostname: '*.supabase.co' },
+      { protocol: 'https', hostname: 'hhdrvkilwtuqftabulov.supabase.co' },
     ],
   },
 }

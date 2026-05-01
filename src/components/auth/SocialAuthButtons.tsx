@@ -37,17 +37,22 @@ export function SocialAuthButtons({ locale }: Props) {
 
   async function handleOAuth(provider: Provider) {
     setLoading(provider)
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${appUrl}/api/auth/callback/oauth?locale=${locale}`,
-      },
-    })
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+      await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${appUrl}/api/auth/callback/oauth?locale=${locale}`,
+        },
+      })
+    } finally {
+      // If user cancels or returns to this page, reset so buttons aren't stuck disabled
+      setTimeout(() => setLoading(null), 1500)
+    }
   }
 
   return (

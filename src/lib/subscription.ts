@@ -21,12 +21,17 @@ export async function hasGroupBundle(
   supabase: SupabaseClient,
   userId: string
 ): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('user_add_ons')
-    .select('add_on')
-    .eq('user_id', userId)
-    .eq('add_on', 'group_bundle')
-    .maybeSingle()
+  // The add-on row alone is not enough — a refunded user keeps the row but
+  // their subscription is no longer active. Require both.
+  const [addOn, sub] = await Promise.all([
+    supabase
+      .from('user_add_ons')
+      .select('add_on')
+      .eq('user_id', userId)
+      .eq('add_on', 'group_bundle')
+      .maybeSingle(),
+    hasActiveSubscription(supabase, userId),
+  ])
 
-  return !error && !!data
+  return !addOn.error && !!addOn.data && sub
 }

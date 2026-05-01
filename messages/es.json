@@ -229,5 +229,41 @@
     "cta_explore_title": "Explorar grupos",
     "cta_explore_desc": "Mira los grupos del Mundial sin desbloquear nada todavía.",
     "skip": "Saltar e ir al inicio"
+  },
+  "login": {
+    "title": "Iniciar sesión",
+    "subtitle": "Qué bueno verte de nuevo",
+    "or": "o",
+    "email_label": "Correo",
+    "password_label": "Contraseña",
+    "email_placeholder": "tu@ejemplo.com",
+    "password_placeholder": "••••••••",
+    "signin_button": "Entrar",
+    "signing_in": "Entrando…",
+    "no_account": "¿No tienes cuenta?",
+    "register_link": "Regístrate",
+    "forgot_password": "¿Olvidaste tu contraseña?",
+    "oauth_error": "No se pudo completar el inicio de sesión. Abre el sitio directamente en Safari o Chrome e inténtalo de nuevo."
+  },
+  "register": {
+    "title": "Crear cuenta",
+    "subtitle": "Empieza a predecir el Mundial",
+    "or": "o",
+    "email_label": "Correo",
+    "password_label": "Contraseña",
+    "confirm_label": "Confirma la contraseña",
+    "email_placeholder": "tu@ejemplo.com",
+    "password_placeholder": "Mín. 6 caracteres",
+    "confirm_placeholder": "••••••••",
+    "create_button": "Crear cuenta",
+    "creating": "Creando cuenta…",
+    "have_account": "¿Ya tienes cuenta?",
+    "signin_link": "Inicia sesión",
+    "passwords_no_match": "Las contraseñas no coinciden",
+    "password_too_short": "La contraseña debe tener al menos 6 caracteres",
+    "oauth_error": "No se pudo completar el registro. Abre el sitio directamente en Safari o Chrome e inténtalo de nuevo.",
+    "check_email_title": "¡Revisa tu correo!",
+    "check_email_desc": "Te enviamos un link de confirmación. Haz click para activar tu cuenta.",
+    "back_to_login": "Volver al login"
   }
 }

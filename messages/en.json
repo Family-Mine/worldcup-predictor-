@@ -229,5 +229,41 @@
     "cta_explore_title": "Browse groups",
     "cta_explore_desc": "Explore the World Cup brackets without unlocking anything yet.",
     "skip": "Skip and go to home"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Welcome back",
+    "or": "or",
+    "email_label": "Email",
+    "password_label": "Password",
+    "email_placeholder": "you@example.com",
+    "password_placeholder": "••••••••",
+    "signin_button": "Sign in",
+    "signing_in": "Signing in…",
+    "no_account": "Don't have an account?",
+    "register_link": "Register",
+    "forgot_password": "Forgot your password?",
+    "oauth_error": "Sign-in could not be completed. Open the site directly in Safari or Chrome and try again."
+  },
+  "register": {
+    "title": "Create account",
+    "subtitle": "Start predicting the World Cup",
+    "or": "or",
+    "email_label": "Email",
+    "password_label": "Password",
+    "confirm_label": "Confirm password",
+    "email_placeholder": "you@example.com",
+    "password_placeholder": "Min. 6 characters",
+    "confirm_placeholder": "••••••••",
+    "create_button": "Create account",
+    "creating": "Creating account…",
+    "have_account": "Already have an account?",
+    "signin_link": "Sign in",
+    "passwords_no_match": "Passwords do not match",
+    "password_too_short": "Password must be at least 6 characters",
+    "oauth_error": "Registration could not be completed. Open the site directly in Safari or Chrome and try again.",
+    "check_email_title": "Check your email",
+    "check_email_desc": "We sent a confirmation link to your inbox. Click it to activate your account.",
+    "back_to_login": "Back to login"
   }
 }
