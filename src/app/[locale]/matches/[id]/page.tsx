@@ -101,7 +101,7 @@ export default async function MatchPage({
 
       {/* Prediction */}
       {prediction && (
-        <div className="mt-8 bg-surface-card border border-surface-border rounded-xl p-6">
+        <div className="mt-8 bg-surface-card border border-surface-border border-t-2 border-t-fifa-gold rounded-xl p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-lg font-bold text-white">AI Prediction</h2>
             <ConfidenceBadge level={prediction.confidence_level} />
@@ -170,7 +170,7 @@ export default async function MatchPage({
       </div>
 
       {/* Head to head */}
-      <div className="mt-6 bg-surface-card border border-surface-border rounded-xl p-6">
+      <div className="mt-6 bg-surface-card border border-surface-border border-t-2 border-t-fifa-gold rounded-xl p-6">
         <h2 className="text-lg font-bold text-white mb-4">Head to Head</h2>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">

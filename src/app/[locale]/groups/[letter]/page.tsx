@@ -70,7 +70,7 @@ export default async function GroupPage({ params }: { params: { letter: string; 
       </div>
 
       {/* Standings */}
-      <div className="bg-surface-card border border-surface-border rounded-xl overflow-hidden mb-10">
+      <div className="bg-surface-card border border-surface-border border-t-2 border-t-fifa-gold rounded-xl overflow-hidden mb-10">
         <div className="grid grid-cols-[1fr,auto,auto,auto,auto,auto,auto] gap-x-3 px-4 py-2 text-xs text-slate-500 uppercase tracking-wider border-b border-surface-border">
           <span>Team</span>
           <span className="text-center w-6">P</span>
