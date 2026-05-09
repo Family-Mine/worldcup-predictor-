@@ -1,18 +1,12 @@
 // src/app/[locale]/layout.tsx
-import type { Metadata, Viewport } from 'next'
+// Wraps children with the intl provider plus Navbar/Footer. The
+// <html>/<body> shell lives in the root layout (src/app/layout.tsx).
+import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
-import { Space_Grotesk } from 'next/font/google'
-import '../globals.css'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
-
-const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '600', '700'] })
-
-export const viewport: Viewport = {
-  viewportFit: 'cover',
-}
 
 export const metadata: Metadata = {
   title: {
@@ -37,21 +31,15 @@ export default async function LocaleLayout({
   setRequestLocale(locale)
   const messages = await getMessages({ locale })
 
-  // Get current user for navbar. The shared helper wraps cookie writes in a
-  // try/catch (Server Components cannot mutate cookies — middleware refreshes
-  // the session instead), so we no longer use the silent setAll no-op here.
+  // Middleware refreshes the session cookies — getUser() here just reads them.
   const supabase = getSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <html lang={locale} className="dark">
-      <body className={`${spaceGrotesk.className} bg-surface text-slate-100 min-h-screen`}>
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <Navbar user={user} />
-          <main>{children}</main>
-          <Footer />
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <Navbar user={user} />
+      <main>{children}</main>
+      <Footer />
+    </NextIntlClientProvider>
   )
 }
