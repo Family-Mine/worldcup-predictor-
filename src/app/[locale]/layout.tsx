@@ -6,6 +6,7 @@ import { Space_Grotesk } from 'next/font/google'
 import '../globals.css'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { getSupabaseServerClient } from '@/lib/supabase/server'
 
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '600', '700'] })
 
@@ -36,15 +37,10 @@ export default async function LocaleLayout({
   setRequestLocale(locale)
   const messages = await getMessages({ locale })
 
-  // Get current user for navbar
-  const { createServerClient } = await import('@supabase/ssr')
-  const { cookies } = await import('next/headers')
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
-  )
+  // Get current user for navbar. The shared helper wraps cookie writes in a
+  // try/catch (Server Components cannot mutate cookies — middleware refreshes
+  // the session instead), so we no longer use the silent setAll no-op here.
+  const supabase = getSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
