@@ -2,10 +2,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { calculatePrediction, TeamInput } from '@/lib/poisson'
+import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { hasActiveSubscription } from '@/lib/subscription'
 
 const CACHE_HOURS = 6
 
-function supabase() {
+function adminDb() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -16,8 +18,20 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { matchId: string } }
 ) {
+  const authClient = getSupabaseServerClient()
+  const { data: { user } } = await authClient.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  }
+
+  const isPaid = await hasActiveSubscription(authClient, user.id)
+  if (!isPaid) {
+    return NextResponse.json({ error: 'Subscription required' }, { status: 403 })
+  }
+
   const { matchId } = params
-  const db = supabase()
+  const db = adminDb()
 
   // Check cache
   const { data: cached } = await db
