@@ -1,5 +1,46 @@
 # WC26 Predictor — Handoff
 
+## ⚡ Estado al cierre 2026-05-09 (sesión auth/security/observability — Dispatch + local)
+
+App estable. Sesión repartida entre Dispatch (móvil) y local — al cierre se consolidaron 6 commits en `main` (todos del 2026-05-09), pendientes de push a `origin`.
+
+### Qué quedó hecho hoy (6 commits en main, NO pusheados a origin)
+
+**Auth + security hardening:**
+- `d473474` — `/api/predictions/[matchId]` ahora exige auth + subscription activa (antes era pública). Cierra leak de predicciones IA a usuarios sin pagar.
+- `75a17f1` — Supabase session refresh movido al middleware (canónico). Eliminado cookie no-op del layout que causaba refreshes redundantes.
+
+**Error pages + SEO:**
+- `0534cac` — Páginas raíz `error.tsx`, `not-found.tsx`, `global-error.tsx` (Next 14 App Router). Antes 404/500 caían a la vista default fea.
+- `fe63286` — `public/robots.txt` apuntando al sitemap.
+
+**Affiliate links centralizados (Dispatch — `claude/nostalgic-bell-fd6539`, integrado vía cherry-pick):**
+- `1afb0e1` (orig `95796fd`) — Nuevo `src/config/affiliates.ts` con tracking parameters por casa de apuestas. `BettingLinksBar.tsx` refactorizado: pasa de 119 → ~50 líneas, consume el config centralizado. Prep para programa de afiliados (ver carpeta `affiliate/` untracked: CHECKLIST.md + GUIA.md + emails para Codere/Betsson/Bet365/WPlay/Rushbet).
+
+**Observability — Sentry (Dispatch — `claude/reverent-matsumoto-c5fe36`, integrado vía cherry-pick):**
+- `0a640cd` (orig `bb19d37`) — `@sentry/nextjs` instalado. Configs: `sentry.client.config.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, `src/instrumentation.ts`. `next.config.mjs` envuelto en `withSentryConfig`. `error.tsx` y `global-error.tsx` reportan a Sentry.
+- **Falta agregar a env producción:** `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `NEXT_PUBLIC_SENTRY_DSN` (ver `.env.example`).
+
+### Estado verificado al cierre
+- `npx tsc --noEmit` → exit 0 ✅
+- `npm install` corrido tras cherry-pick de Sentry (deps nuevas instaladas)
+- `git status` → 4 commits ahead de `origin/main`, untracked: `affiliate/` (docs manuales) y `.claude/worktrees/`
+
+### Branches Dispatch huérfanas (no integrar — son viejas/duplicadas)
+- `claude/bold-cerf-6b0625`, `ecstatic-stonebraker-775d92`, `thirsty-darwin-3d6cd9` — landing redesign + OAuth Google/Apple + hamburger menu (31 behind main, sin rebase, conflictos seguros). NO integrar sin revisar — del 2026-04-XX.
+- `claude/eloquent-shtern`, `romantic-chandrasekhar`, `dreamy-feistel`, `exciting-neumann`, `magical-cartwright`, `nice-zhukovsky` — ya mergeadas o stale, eliminables.
+
+### Pendientes vivos (heredados + nuevos)
+- **Push de los 6 commits de hoy a `origin/main`** (pendiente de aprobación)
+- Configurar Sentry DSN + auth token en Vercel env vars (sin esto Sentry no reporta nada en prod)
+- Decidir si las branches Dispatch huérfanas se eliminan o se rebasen
+- Centralizar auth en middleware (deuda técnica, NO tocar pre-WC26 — riesgo a 30 días del kickoff)
+- Smoke test pago end-to-end con tarjeta real
+- App móvil WC26 — build EAS + submit App Store / Play Store (HANDOFF en `~/Desktop/wc26-mobile`)
+- Programa afiliados: enviar emails (`affiliate/emails/*.md` listos)
+
+---
+
 ## ⚡ Estado al cierre 2026-05-01 (sesión polish UX + recta final)
 
 App estable en producción. Foco: UX para usuarios pagos + finalizar rediseño visual + cerrar pendientes deferred + revenue leak en mobile.
