@@ -1,43 +1,90 @@
 # WC26 Predictor — Handoff
 
-## ⚡ Estado al cierre 2026-05-09 (sesión auth/security/observability — Dispatch + local)
+## ⚡ Estado al cierre 2026-05-10 (Sentry activado end-to-end + bug Vercel install pendiente)
 
-App estable. Sesión repartida entre Dispatch (móvil) y local — al cierre se consolidaron 6 commits en `main` (todos del 2026-05-09), pendientes de push a `origin`.
+App estable, todo pusheado a `origin/main`. Sentry verificado capturando eventos en prod. Sesión combinada Dispatch (móvil) + local del 2026-05-09 que cerró el 2026-05-10 con verificación de observabilidad.
 
-### Qué quedó hecho hoy (6 commits en main, NO pusheados a origin)
+### Commits pusheados a origin (en orden cronológico, todos en `main`)
 
-**Auth + security hardening:**
-- `d473474` — `/api/predictions/[matchId]` ahora exige auth + subscription activa (antes era pública). Cierra leak de predicciones IA a usuarios sin pagar.
-- `75a17f1` — Supabase session refresh movido al middleware (canónico). Eliminado cookie no-op del layout que causaba refreshes redundantes.
+**Del 2026-05-09 (integrados + originales):**
+- `d473474` — `/api/predictions/[matchId]` exige auth + subscription activa (cierra leak de predicciones IA gratis)
+- `75a17f1` — Supabase session refresh en middleware (canónico)
+- `0534cac` — `error.tsx`, `not-found.tsx`, `global-error.tsx` raíz (Next 14 App Router)
+- `fe63286` — `public/robots.txt` → sitemap
+- `1afb0e1` (orig `95796fd`, cherry-pick de Dispatch) — `src/config/affiliates.ts` centralizado + refactor `BettingLinksBar.tsx` (119→~50 líneas)
+- `0a640cd` (orig `bb19d37`, cherry-pick de Dispatch) — `@sentry/nextjs` integrado: client/server/edge configs + `instrumentation.ts` + `withSentryConfig` en `next.config.mjs`
 
-**Error pages + SEO:**
-- `0534cac` — Páginas raíz `error.tsx`, `not-found.tsx`, `global-error.tsx` (Next 14 App Router). Antes 404/500 caían a la vista default fea.
-- `fe63286` — `public/robots.txt` apuntando al sitemap.
+**Del 2026-05-09→10 (cierre de sesión):**
+- `56372c5` — HANDOFF.md sesión 2026-05-09
+- `2c89e04` — `affiliate/` (CHECKLIST + GUIA + 5 emails Codere/Betsson/Bet365/WPlay/Rushbet) + gitignore `.claude/worktrees/` + lockfile patch bumps
 
-**Affiliate links centralizados (Dispatch — `claude/nostalgic-bell-fd6539`, integrado vía cherry-pick):**
-- `1afb0e1` (orig `95796fd`) — Nuevo `src/config/affiliates.ts` con tracking parameters por casa de apuestas. `BettingLinksBar.tsx` refactorizado: pasa de 119 → ~50 líneas, consume el config centralizado. Prep para programa de afiliados (ver carpeta `affiliate/` untracked: CHECKLIST.md + GUIA.md + emails para Codere/Betsson/Bet365/WPlay/Rushbet).
+### Sentry — setup completo y verificado ✅
 
-**Observability — Sentry (Dispatch — `claude/reverent-matsumoto-c5fe36`, integrado vía cherry-pick):**
-- `0a640cd` (orig `bb19d37`) — `@sentry/nextjs` instalado. Configs: `sentry.client.config.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, `src/instrumentation.ts`. `next.config.mjs` envuelto en `withSentryConfig`. `error.tsx` y `global-error.tsx` reportan a Sentry.
-- **Falta agregar a env producción:** `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `NEXT_PUBLIC_SENTRY_DSN` (ver `.env.example`).
+**Proyecto Sentry:**
+- Org: `alinea-sports` · Project: `javascript-nextjs` · Issues: https://alinea-sports.sentry.io/issues/?project=4511363124690944
+- DSN: `https://445c85fc5d7e509887f7d7e1e8f0f22f@o4511363119054848.ingest.us.sentry.io/4511363124690944`
+- Auth token: rotado tras exposición en chat (el viejo ya está revocado)
+- Plan: Trial Business 14 días — cuando expire cae a Developer free tier (5K errores/mes)
 
-### Estado verificado al cierre
-- `npx tsc --noEmit` → exit 0 ✅
-- `npm install` corrido tras cherry-pick de Sentry (deps nuevas instaladas)
-- `git status` → 4 commits ahead de `origin/main`, untracked: `affiliate/` (docs manuales) y `.claude/worktrees/`
+**Env vars en Vercel production (5):**
+- `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG=alinea-sports`, `SENTRY_PROJECT=javascript-nextjs`
 
-### Branches Dispatch huérfanas (no integrar — son viejas/duplicadas)
-- `claude/bold-cerf-6b0625`, `ecstatic-stonebraker-775d92`, `thirsty-darwin-3d6cd9` — landing redesign + OAuth Google/Apple + hamburger menu (31 behind main, sin rebase, conflictos seguros). NO integrar sin revisar — del 2026-04-XX.
-- `claude/eloquent-shtern`, `romantic-chandrasekhar`, `dreamy-feistel`, `exciting-neumann`, `magical-cartwright`, `nice-zhukovsky` — ya mergeadas o stale, eliminables.
+**Verificación end-to-end:**
+- Ruta temporal `/api/sentry-test` creada → hit → evento capturado en Sentry con stack trace completo, source maps OK (release `56372c503ec2` matchea commit hash) → ruta borrada y redeployada limpia. Funciona.
+- Sentry NO está enabled en `NODE_ENV=development` (solo prod/preview) por config en `sentry.{client,server,edge}.config.ts`.
 
-### Pendientes vivos (heredados + nuevos)
-- **Push de los 6 commits de hoy a `origin/main`** (pendiente de aprobación)
-- Configurar Sentry DSN + auth token en Vercel env vars (sin esto Sentry no reporta nada en prod)
-- Decidir si las branches Dispatch huérfanas se eliminan o se rebasen
-- Centralizar auth en middleware (deuda técnica, NO tocar pre-WC26 — riesgo a 30 días del kickoff)
-- Smoke test pago end-to-end con tarjeta real
-- App móvil WC26 — build EAS + submit App Store / Play Store (HANDOFF en `~/Desktop/wc26-mobile`)
-- Programa afiliados: enviar emails (`affiliate/emails/*.md` listos)
+### 🚨 Bug pendiente: `npm install` en Vercel cloud falla
+
+**Síntoma:** `vercel deploy --prod` falla en step de install con `npm error Invalid Version:` (con string vacío después de los `:`). Local funciona perfecto (`npm ci`, `npm install`, `tsc --noEmit` todo OK).
+
+**Probado y NO resolvió:**
+- `installCommand: "npm ci"` en vercel.json
+- `installCommand: "npm install --legacy-peer-deps --no-audit"`
+- `--force` (skipear build cache)
+- `"packageManager": "npm@11.8.0"` en package.json
+- Regenerar lockfile (`npm install --package-lock-only`)
+
+**Workaround actual:** deploy manual con `vercel build && vercel deploy --prebuilt --prod --yes`. Funciona y prod está sirviendo así. **Implicación:** auto-deploys desde `git push` a main están rotos hasta resolver.
+
+**Próximo intento sugerido:**
+- Abrir ticket en Vercel support con un dpl ID fallido (ej: `dpl_DdQbQiFRg2vMogych7TybJZjf4qw`) — ellos pueden ver el debug log en `/vercel/.npm/_logs/...debug-0.log` que no es accesible vía CLI
+- Alternativa: revertir el commit `0a640cd` (Sentry) en una branch separada y ver si el deploy normal vuelve a funcionar → confirmaría 100% que la causa es `@sentry/nextjs ^10.52.0`
+- Más drástico: migrar a pnpm o yarn (`packageManager` field)
+
+### Branches Dispatch sin tocar
+
+**Stale, eliminables (ya en main o vacías):** `claude/eloquent-shtern`, `romantic-chandrasekhar`, `dreamy-feistel`, `exciting-neumann`, `magical-cartwright`, `nice-zhukovsky`, `reverent-matsumoto-c5fe36`, `nostalgic-bell-fd6539`.
+
+**Con trabajo viejo NO integrado (31 commits behind main):** `claude/bold-cerf-6b0625`, `ecstatic-stonebraker-775d92`, `thirsty-darwin-3d6cd9` — landing redesign + OAuth Google/Apple + hamburger menu del 2026-04-XX. NO integrar sin code review profundo, riesgo de regresión a 30 días del kickoff.
+
+### Pendientes vivos (priorizados)
+
+1. **Resolver bug Vercel `npm install`** — alto. Sin esto, cada deploy a prod requiere `vercel build && vercel deploy --prebuilt --prod --yes` manual.
+2. **Limpiar branches Dispatch stale** — `git branch -D claude/eloquent-shtern claude/romantic-chandrasekhar claude/dreamy-feistel claude/exciting-neumann claude/magical-cartwright claude/nice-zhukovsky claude/reverent-matsumoto-c5fe36 claude/nostalgic-bell-fd6539` (verificar `git log` de cada una antes).
+3. **Decidir sobre las 3 branches Dispatch con trabajo viejo no integrado** (`bold-cerf`, `ecstatic-stonebraker`, `thirsty-darwin`) — code review + rebase, o eliminar.
+4. **Programa afiliados** — enviar los 5 emails desde `affiliate/emails/`. Checklist en `affiliate/CHECKLIST.md`, GUIA con metodología en `affiliate/GUIA.md`.
+5. **Trial Sentry expira ~2026-05-24** — decidir si pagar Team plan ($26/mes) o caer al free tier (suficiente para el tráfico actual).
+6. **App móvil WC26** — build EAS + submit App Store / Play Store (HANDOFF en `~/Desktop/wc26-mobile`).
+7. Centralizar auth en middleware (deuda técnica, NO tocar pre-WC26).
+8. Smoke test pago end-to-end con tarjeta real post-cambios de seguridad.
+
+### Comandos útiles para retomar
+
+```bash
+cd ~/Desktop/worldcup-predictor
+
+# Deploy a prod (workaround actual por bug npm install)
+vercel build --yes --prod && vercel deploy --prebuilt --prod --yes
+
+# Pull env vars frescas si cambia algo en Sentry/Stripe
+vercel pull --yes --environment production
+
+# Ver Sentry issues
+open https://alinea-sports.sentry.io/issues/?project=4511363124690944
+
+# Listar deployments recientes
+vercel ls --prod
+```
 
 ---
 
