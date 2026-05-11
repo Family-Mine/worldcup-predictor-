@@ -41,3 +41,4 @@ HANDOFF.md
 .env
 AuthKey_*.p8
 .env.local
+.claude/worktrees/
